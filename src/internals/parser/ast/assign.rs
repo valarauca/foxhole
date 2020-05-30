@@ -2,11 +2,11 @@ use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::span::{Span, Spanner};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Assign<'input> {
-    pub name: Ident<'input>,
-    pub expr: Expression<'input>,
-    pub span: Span<'input>,
+    pub name: Box<Ident<'input>>,
+    pub expr: Box<Expression<'input>>,
+    pub span: Box<Span<'input>>,
 }
 impl<'input> AsRef<Span<'input>> for Assign<'input> {
     fn as_ref(&self) -> &Span<'input> {
@@ -24,7 +24,9 @@ impl<'input> Assign<'input> {
     where
         F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
     {
-        let span = span()?;
+        let span = Box::new(span()?);
+        let name = Box::new(name);
+        let expr = Box::new(expr);
         Ok(Self { name, expr, span })
     }
 }

@@ -7,13 +7,13 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-cfgrammar = { git = "https://github.com/softdevteam/grmtools", rev = "0b61a58dc" }
-lrlex = { git = "https://github.com/softdevteam/grmtools", rev = "0b61a58dc" }
-lrpar = { git = "https://github.com/softdevteam/grmtools", rev = "0b61a58dc" }
+cfgrammar = { git = "https://github.com/valarauca/grmtools", rev = "72e010e" }
+lrlex = { git = "https://github.com/valarauca/grmtools", rev = "72e010e" }
+lrpar = { git = "https://github.com/valarauca/grmtools", rev = "72e010e" }
 
 [dependencies]
-cfgrammar = { git = "https://github.com/softdevteam/grmtools", rev = "0b61a58dc" }
-lrlex = { git = "https://github.com/softdevteam/grmtools", rev = "0b61a58dc" }
-lrpar = { git = "https://github.com/softdevteam/grmtools", rev = "0b61a58dc" }
+cfgrammar = { git = "https://github.com/valarauca/grmtools", rev = "72e010e" }
+lrlex = { git = "https://github.com/valarauca/grmtools", rev = "72e010e" }
+lrpar = { git = "https://github.com/valarauca/grmtools", rev = "72e010e" }
 num-traits = "0.2.11"
 

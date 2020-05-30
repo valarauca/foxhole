@@ -6,8 +6,8 @@ use crate::internals::parser::{
 /// Template is a variable who's value is given at run time.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Template<'input> {
-    pub span: Span<'input>,
-    pub ident: Ident<'input>,
+    pub span: Box<Span<'input>>,
+    pub ident: Box<Ident<'input>>,
     pub behavior: Option<TemplateBehavior<'input>>,
 }
 impl<'input> Template<'input> {
@@ -17,6 +17,8 @@ impl<'input> Template<'input> {
         B: Into<Option<TemplateBehavior<'input>>>,
     {
         let behavior = behavior.into();
+        let ident = Box::new(ident);
+        let span = Box::new(span);
         Template {
             span,
             ident,
