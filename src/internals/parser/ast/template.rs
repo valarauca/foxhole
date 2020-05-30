@@ -1,7 +1,6 @@
-
 use crate::internals::parser::{
-    span::{Span,Spanner},
-    ast::ident::{Ident},
+    ast::ident::Ident,
+    span::{Span, Spanner},
 };
 
 /// Template is a variable who's value is given at run time.

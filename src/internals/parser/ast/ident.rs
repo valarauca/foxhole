@@ -1,13 +1,11 @@
-
 use crate::internals::parser::span::{Span, Spanner};
 
 /// Identifier is a parsed identifier. A function name, a variable, etc.
-#[derive(Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Ident<'input> {
     span: Span<'input>,
 }
 impl<'input> Ident<'input> {
-
     /// constructs a new identifier from a span
     #[inline(always)]
     pub(in crate::internals::parser) fn new(span: Span<'input>) -> Self {

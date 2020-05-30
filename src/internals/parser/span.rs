@@ -1,17 +1,12 @@
-
-use std::hash::{Hash};
+use std::hash::Hash;
 
 // cargo doesn't realize I'm using this in a function signature.
 #[allow(unused_imports)]
-use lrpar::{Lexer,Lexeme,NonStreamingLexer};
+use lrpar::{Lexeme, Lexer, NonStreamingLexer};
 
-use num_traits::{
-    PrimInt,
-    Unsigned,
-};
+use num_traits::{PrimInt, Unsigned};
 
-use super::{Identifier};
-
+use super::Identifier;
 
 /// Span contains information about where some text lies within the pre-parse structure
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -37,11 +32,10 @@ pub struct Span<'input> {
 }
 
 impl<'input> Span<'input> {
-
     /// Build a Span.
     ///
     /// Ensure `s` and `span` are never both `None`. As this will trigger a panic.
-    pub(in crate::internals::parser) fn new<'a,U, G, S, L>(
+    pub(in crate::internals::parser) fn new<'a, U, G, S, L>(
         l: &'a L,
         s: G,
         span: S,
@@ -76,8 +70,24 @@ impl<'input> Span<'input> {
             end_column: end_column as u32,
             start_byte: start_byte as u32,
             end_byte: end_byte as u32,
-            token, surrounding_lines, identifier,
+            token,
+            surrounding_lines,
+            identifier,
         })
+    }
+
+    pub(in crate::internals::parser) fn into<'a, 'b, U, S, L>(
+        l: &'a L,
+        span: S,
+    ) -> impl 'b + FnOnce() -> Result<Span<'input>, lrpar::Lexeme<U>>
+    where
+        'a: 'b,
+        'input: 'a,
+        L: NonStreamingLexer<'input, U> + Lexer<U> + ?Sized,
+        U: Unsigned + PrimInt + Hash,
+        S: Into<Option<lrpar::Span>> + 'a,
+    {
+        move || Span::new(l, None, span)
     }
 }
 impl<'input> AsRef<Span<'input>> for Span<'input> {
@@ -86,14 +96,13 @@ impl<'input> AsRef<Span<'input>> for Span<'input> {
         self
     }
 }
-impl<'input> Spanner<'input> for Span<'input> { }
+impl<'input> Spanner<'input> for Span<'input> {}
 
 /// Spanner is a trait which can be implemented on all AST Types.
 ///
 /// It exists to simply the generation error messages as well as
 /// getting source location more imply.
 pub trait Spanner<'input>: AsRef<Span<'input>> {
-
     /// returns the byte index of the first byte of this span within the source file.
     fn get_start_byte_index(&self) -> usize {
         self.as_ref().start_byte as usize
@@ -134,13 +143,10 @@ pub trait Spanner<'input>: AsRef<Span<'input>> {
     fn get_surrounding_lines(&self) -> &'input str {
         self.as_ref().surrounding_lines
     }
-
 }
-
 
 #[test]
 fn span_struct_is_a_cache_line() {
     use std::mem::size_of;
     assert_eq!(size_of::<Span>(), 64);
 }
-

@@ -52,8 +52,7 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 [[package]]
 name = "cfgrammar"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c49ca3149e61ac572a7621e1548a90f94e7d03597f79a192e6815e87f3a44f4c"
+source = "git+https://github.com/softdevteam/grmtools?rev=0b61a58dc#0b61a58dc34b6ee960b0411e6d6ced1c5607f751"
 dependencies = [
  "getopts",
  "indexmap",
@@ -126,8 +125,7 @@ checksum = "99e85c08494b21a9054e7fe1374a732aeadaff3980b6990b94bfd3a70f690005"
 [[package]]
 name = "lrlex"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc2319d36c34c75410d7f5ed2b4e1b8971ac273bef8a85268fb7194de08412ff"
+source = "git+https://github.com/softdevteam/grmtools?rev=0b61a58dc#0b61a58dc34b6ee960b0411e6d6ced1c5607f751"
 dependencies = [
  "getopts",
  "lazy_static",
@@ -135,14 +133,12 @@ dependencies = [
  "num-traits",
  "regex",
  "try_from",
- "typename",
 ]
 
 [[package]]
 name = "lrpar"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e63b2780253ac69c42f071ebda4e11472ff57c2da3eff1c8c66b5febb03adf3"
+source = "git+https://github.com/softdevteam/grmtools?rev=0b61a58dc#0b61a58dc34b6ee960b0411e6d6ced1c5607f751"
 dependencies = [
  "bincode",
  "cactus",
@@ -158,7 +154,6 @@ dependencies = [
  "rmp-serde",
  "serde",
  "static_assertions",
- "typename",
  "vergen",
  "vob",
 ]
@@ -166,8 +161,7 @@ dependencies = [
 [[package]]
 name = "lrtable"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebf39cac4916f99cdc83e847ecd9da13d6d2a9ca11b1811d6e5e6f5da24f92c9"
+source = "git+https://github.com/softdevteam/grmtools?rev=0b61a58dc#0b61a58dc34b6ee960b0411e6d6ced1c5607f751"
 dependencies = [
  "cfgrammar",
  "fnv",
@@ -419,25 +413,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "283d3b89e1368717881a9d51dad843cc435380d8109c9e47d38780a324698d8b"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "typename"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c255dd1af8cf5cfb95f062266201778080d215e86294dba14c47bf3137c55419"
-dependencies = [
- "typename_derive",
-]
-
-[[package]]
-name = "typename_derive"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c68acf2f6e8a32e2bad47e73ee177558583fb9dbb264a5c0569c7f9f80f79b0a"
-dependencies = [
- "quote",
- "syn",
 ]
 
 [[package]]

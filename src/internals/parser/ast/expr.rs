@@ -1,11 +1,11 @@
-
+use crate::internals::parser::ast::ident::Ident;
+use crate::internals::parser::ast::invoke::Invoke;
+use crate::internals::parser::ast::template::Template;
 use crate::internals::parser::span::{Span, Spanner};
-use crate::internals::parser::ast::ident::{Identifier};
-use crate::internals::parser::ast::template::{Template};
 
 /// Expressions are just the meet & potatos of code.
-/// random bits saying `x := y +2;` and what not.
-#[derive(Clone, Debug)]
+/// random bits saying `y + 2` and what not.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Expression<'input> {
     pub kind: Expr<'input>,
     pub span: Span<'input>,
@@ -19,18 +19,70 @@ impl<'input> Spanner<'input> for Expression<'input> {}
 
 /// Expr stores the internal information about the expression.
 /// more or less, what the expression is and what it is doing
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Expr<'input> {
-    Ident(Box<Identifier<'input>>),
-    Number(Box<Span<'input>>),
-    TemplateVar(Box<Template<'input>>),
+    Var(Box<Ident<'input>>),
+    Num(Box<Span<'input>>),
+    Template(Box<Template<'input>>),
+    Invoke(Box<Invoke<'input>>),
+    /*
     Parens(Box<Expression<'input>>),
     Binomial(Box<BinomialExpression<'input>>),
-    Call(Box<FunctionInvocation<'input>>),
-    Cond(Box<Conditional<'input>>),
     Assign(Box<Assignment<'input>>),
     UnaryOp(Box<UnaryExpression<'input>>),
+    */
 }
+impl<'input> Expression<'input> {
+    pub(in crate::internals::parser) fn var<F>(
+        ident: Ident<'input>,
+        span: F,
+    ) -> Result<Self, lrpar::Lexeme<u32>>
+    where
+        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+    {
+        let span = span()?;
+        let kind = Expr::Var(Box::new(ident));
+        Ok(Self { kind, span })
+    }
+
+    pub(in crate::internals::parser) fn num<F>(
+        num: Span<'input>,
+        span: F,
+    ) -> Result<Self, lrpar::Lexeme<u32>>
+    where
+        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+    {
+        let span = span()?;
+        let kind = Expr::Num(Box::new(num.clone()));
+        Ok(Self { kind, span })
+    }
+
+    pub(in crate::internals::parser) fn template<F>(
+        template: Template<'input>,
+        span: F,
+    ) -> Result<Self, lrpar::Lexeme<u32>>
+    where
+        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+    {
+        let span = span()?;
+        let kind = Expr::Template(Box::new(template));
+        Ok(Self { kind, span })
+    }
+
+    pub(in crate::internals::parser) fn invoke<F>(
+        invoke: Invoke<'input>,
+        span: F,
+    ) -> Result<Self, lrpar::Lexeme<u32>>
+    where
+        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+    {
+        let span = span()?;
+        let kind = Expr::Invoke(Box::new(invoke));
+        Ok(Self { kind, span })
+    }
+}
+
+/*
 
 impl<'input> Expression<'input> {
     /// create a new ident
@@ -223,11 +275,6 @@ impl<'input> Expression<'input> {
         Self::binomial(left, right, span, BinomialOperator::ForEach)
     }
 
-    /*
-     * Unary Operations
-     *
-     */
-
     fn unary_op(
         expr: Expression<'input>,
         span: Span<'input>,
@@ -268,11 +315,6 @@ impl<'input> Expression<'input> {
     }
 }
 
-/*
- * Defining expresions with 2 arguments and an operator
- *
- */
-
 /// BinomialExpressions are expressions which require 2 expressions.
 #[derive(Clone, Debug)]
 pub struct BinomialExpression<'input> {
@@ -307,11 +349,6 @@ pub enum BinomialOperator {
     ForEach,
 }
 
-/*
- * Defining Expressions with require invoking a function
- *
- */
-
 /// Want to call a function, this is the argument that is
 /// used.
 #[derive(Clone, Debug)]
@@ -326,12 +363,6 @@ impl<'input> AsRef<Span<'input>> for FunctionInvocation<'input> {
     }
 }
 impl<'input> Spanner<'input> for FunctionInvocation<'input> {}
-
-/*
- *
- * Defining Conditional Expressions
- *
- */
 /// Basically, and if statement. All statements require
 /// both directions are declared.
 #[derive(Clone, Debug)]
@@ -348,11 +379,6 @@ impl<'input> AsRef<Span<'input>> for Conditional<'input> {
 }
 impl<'input> Spanner<'input> for Conditional<'input> {}
 
-/*
- *
- * Unary Expressions
- *
- */
 /// Operations that invole a single sigal
 #[derive(Clone, Debug)]
 pub struct UnaryExpression<'input> {
@@ -379,11 +405,6 @@ pub enum UnaryOperator {
     Dice10,
     Dice12,
 }
-
-/*
- * Assigning variables
- *
- */
 #[derive(Clone, Debug)]
 pub struct Assignment<'input> {
     pub span: Span<'input>,
@@ -396,3 +417,5 @@ impl<'input> AsRef<Span<'input>> for Assignment<'input> {
     }
 }
 impl<'input> Spanner<'input> for Assignment<'input> {}
+
+*/
