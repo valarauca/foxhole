@@ -1,4 +1,4 @@
-pub mod lexer_l {
+pub(in crate::internals::parser) mod lexer_l {
 use lrlex::{LexerDef, LRNonStreamingLexerDef, Rule};
 
 #[allow(dead_code)]
@@ -37,53 +37,53 @@ Rule::new(Some(28), None, "((//|#![^\\n\\r]*)|[ \\t\\n\\r]+)".to_string()).unwra
     LRNonStreamingLexerDef::from_rules(rules)
 }
 #[allow(dead_code)]
-pub const T_LT: u32 = 10;
+pub const T_NUM: u32 = 18;
+#[allow(dead_code)]
+pub const T_GT: u32 = 9;
 #[allow(dead_code)]
 pub const T_OR: u32 = 14;
 #[allow(dead_code)]
-pub const T_ASSIGN: u32 = 2;
+pub const T_TEMPLATE_ASSIGN: u32 = 22;
 #[allow(dead_code)]
 pub const T_TEMPLATE_START: u32 = 21;
 #[allow(dead_code)]
-pub const T_MUL: u32 = 5;
-#[allow(dead_code)]
-pub const T_IDENT: u32 = 20;
-#[allow(dead_code)]
-pub const T_TEMPLATE_FALLBACK: u32 = 24;
-#[allow(dead_code)]
-pub const T_LPAR: u32 = 16;
-#[allow(dead_code)]
-pub const T_NUM: u32 = 18;
-#[allow(dead_code)]
 pub const T_EQ: u32 = 7;
 #[allow(dead_code)]
-pub const T_ADD: u32 = 3;
-#[allow(dead_code)]
-pub const T_DIV: u32 = 6;
-#[allow(dead_code)]
 pub const T_RBRACE: u32 = 23;
-#[allow(dead_code)]
-pub const T_COMMA: u32 = 19;
-#[allow(dead_code)]
-pub const T_LE: u32 = 12;
-#[allow(dead_code)]
-pub const T_GE: u32 = 11;
-#[allow(dead_code)]
-pub const T_SEMI: u32 = 0;
-#[allow(dead_code)]
-pub const T_GT: u32 = 9;
 #[allow(dead_code)]
 pub const T_LET: u32 = 1;
 #[allow(dead_code)]
 pub const T_RPAR: u32 = 17;
 #[allow(dead_code)]
-pub const T_SUB: u32 = 4;
+pub const T_LT: u32 = 10;
+#[allow(dead_code)]
+pub const T_GE: u32 = 11;
+#[allow(dead_code)]
+pub const T_LE: u32 = 12;
 #[allow(dead_code)]
 pub const T_AND: u32 = 13;
 #[allow(dead_code)]
+pub const T_XOR: u32 = 15;
+#[allow(dead_code)]
+pub const T_SUB: u32 = 4;
+#[allow(dead_code)]
+pub const T_DIV: u32 = 6;
+#[allow(dead_code)]
+pub const T_SEMI: u32 = 0;
+#[allow(dead_code)]
+pub const T_LPAR: u32 = 16;
+#[allow(dead_code)]
+pub const T_ASSIGN: u32 = 2;
+#[allow(dead_code)]
+pub const T_COMMA: u32 = 19;
+#[allow(dead_code)]
+pub const T_IDENT: u32 = 20;
+#[allow(dead_code)]
+pub const T_ADD: u32 = 3;
+#[allow(dead_code)]
 pub const T_NE: u32 = 8;
 #[allow(dead_code)]
-pub const T_TEMPLATE_ASSIGN: u32 = 22;
+pub const T_MUL: u32 = 5;
 #[allow(dead_code)]
-pub const T_XOR: u32 = 15;
+pub const T_TEMPLATE_FALLBACK: u32 = 24;
 }

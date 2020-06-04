@@ -52,7 +52,7 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 [[package]]
 name = "cfgrammar"
 version = "0.8.0"
-source = "git+https://github.com/valarauca/grmtools?rev=d75e870#d75e870ea49ee6db4528cc381fa5921136c23d95"
+source = "git+https://github.com/valarauca/grmtools?rev=01670e4#01670e47d2da57d79cd141abb31ceac34aaa05a4"
 dependencies = [
  "getopts",
  "indexmap",
@@ -125,7 +125,7 @@ checksum = "99e85c08494b21a9054e7fe1374a732aeadaff3980b6990b94bfd3a70f690005"
 [[package]]
 name = "lrlex"
 version = "0.8.0"
-source = "git+https://github.com/valarauca/grmtools?rev=d75e870#d75e870ea49ee6db4528cc381fa5921136c23d95"
+source = "git+https://github.com/valarauca/grmtools?rev=01670e4#01670e47d2da57d79cd141abb31ceac34aaa05a4"
 dependencies = [
  "getopts",
  "lazy_static",
@@ -138,7 +138,7 @@ dependencies = [
 [[package]]
 name = "lrpar"
 version = "0.8.0"
-source = "git+https://github.com/valarauca/grmtools?rev=d75e870#d75e870ea49ee6db4528cc381fa5921136c23d95"
+source = "git+https://github.com/valarauca/grmtools?rev=01670e4#01670e47d2da57d79cd141abb31ceac34aaa05a4"
 dependencies = [
  "bincode",
  "cactus",
@@ -161,7 +161,7 @@ dependencies = [
 [[package]]
 name = "lrtable"
 version = "0.8.0"
-source = "git+https://github.com/valarauca/grmtools?rev=d75e870#d75e870ea49ee6db4528cc381fa5921136c23d95"
+source = "git+https://github.com/valarauca/grmtools?rev=01670e4#01670e47d2da57d79cd141abb31ceac34aaa05a4"
 dependencies = [
  "cfgrammar",
  "fnv",
