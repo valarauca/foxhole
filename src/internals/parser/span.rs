@@ -3,8 +3,8 @@ use std::hash::Hash;
 // cargo doesn't realize I'm using this in a function signature.
 #[allow(unused_imports)]
 use lrpar::{Lexeme, Lexer, NonStreamingLexer};
-
 use num_traits::{PrimInt, Unsigned};
+use try_from::TryFrom;
 
 use super::Identifier;
 
@@ -42,7 +42,7 @@ impl<'input> Span<'input> {
     ) -> Result<Span<'input>, lrpar::Lexeme<U>>
     where
         L: NonStreamingLexer<'input, U> + Lexer<U> + ?Sized,
-        U: Unsigned + PrimInt + Hash,
+        U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
         S: Into<Option<lrpar::Span>>,
         G: Into<Option<Result<lrpar::Lexeme<U>, lrpar::Lexeme<U>>>>,
     {
@@ -76,6 +76,26 @@ impl<'input> Span<'input> {
         })
     }
 
+    /// creates a new span, but will not panic
+    #[allow(dead_code)]
+    pub(in crate::internals::parser) fn new_panic<'a, 'b, U, L, T>(l: &'a L, arg: T) -> Span<'input>
+    where
+        'a: 'b,
+        'input: 'a,
+        SpanBuilder<U>: From<T>,
+        L: NonStreamingLexer<'input, U> + Lexer<U> + ?Sized,
+        U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
+    {
+        let output = match SpanBuilder::from(arg) {
+            SpanBuilder::Lexeme(lexeme) => Span::new(l, Ok(lexeme), None),
+            SpanBuilder::Span(span) => Span::new(l, None, span),
+        };
+        match output {
+            Ok(x) => x,
+            _ => panic!(),
+        }
+    }
+
     pub(in crate::internals::parser) fn into<'a, 'b, U, S, L>(
         l: &'a L,
         span: S,
@@ -84,7 +104,7 @@ impl<'input> Span<'input> {
         'a: 'b,
         'input: 'a,
         L: NonStreamingLexer<'input, U> + Lexer<U> + ?Sized,
-        U: Unsigned + PrimInt + Hash,
+        U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
         S: Into<Option<lrpar::Span>> + 'a,
     {
         move || Span::new(l, None, span)
@@ -97,6 +117,47 @@ impl<'input> AsRef<Span<'input>> for Span<'input> {
     }
 }
 impl<'input> Spanner<'input> for Span<'input> {}
+
+/// SpanBuilder is used to handle the different things a "span" can be created from
+pub enum SpanBuilder<U>
+where
+    U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
+{
+    Lexeme(lrpar::Lexeme<U>),
+    Span(lrpar::Span),
+}
+impl<U> From<lrpar::Lexeme<U>> for SpanBuilder<U>
+where
+    U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
+{
+    fn from(arg: lrpar::Lexeme<U>) -> Self {
+        Self::Lexeme(arg)
+    }
+}
+impl<'a, U> From<&'a lrpar::Lexeme<U>> for SpanBuilder<U>
+where
+    U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
+{
+    fn from(arg: &'a lrpar::Lexeme<U>) -> Self {
+        Self::Lexeme(arg.clone())
+    }
+}
+impl<'a, U> From<&'a lrpar::Span> for SpanBuilder<U>
+where
+    U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
+{
+    fn from(arg: &'a lrpar::Span) -> Self {
+        Self::Span(arg.clone())
+    }
+}
+impl<U> From<lrpar::Span> for SpanBuilder<U>
+where
+    U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
+{
+    fn from(arg: lrpar::Span) -> Self {
+        Self::Span(arg)
+    }
+}
 
 /// Spanner is a trait which can be implemented on all AST Types.
 ///

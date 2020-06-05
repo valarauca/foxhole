@@ -16,4 +16,5 @@ cfgrammar = { git = "https://github.com/valarauca/grmtools", rev = "01670e4" }
 lrlex = { git = "https://github.com/valarauca/grmtools", rev = "01670e4" }
 lrpar = { git = "https://github.com/valarauca/grmtools", rev = "01670e4" }
 num-traits = "0.2.11"
+try_from = "0.3.2"
 

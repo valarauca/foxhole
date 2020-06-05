@@ -2,7 +2,7 @@ use std::error::Error;
 
 use cfgrammar::yacc::YaccKind;
 use lrlex::LexerBuilder;
-use lrpar::{CTParserBuilder, RecoveryKind,Visibility};
+use lrpar::{CTParserBuilder, RecoveryKind, Visibility};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let master_lex_rules_id_map = CTParserBuilder::new()

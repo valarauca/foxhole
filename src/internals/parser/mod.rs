@@ -6,3 +6,5 @@ mod id;
 pub use self::id::Identifier;
 
 mod generated;
+
+mod traits;

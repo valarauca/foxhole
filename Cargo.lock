@@ -190,6 +190,7 @@ dependencies = [
  "lrlex",
  "lrpar",
  "num-traits",
+ "try_from",
 ]
 
 [[package]]
