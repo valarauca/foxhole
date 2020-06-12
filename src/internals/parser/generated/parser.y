@@ -23,13 +23,21 @@ Sttmnts -> Result<Vec<Statement<'input>>,lrpar::Lexeme<u32>>:
     | Sttmnt { Ok(vec![$1?]) };
 
 Sttmnt -> Result<Statement<'input>,lrpar::Lexeme<u32>>:
-    Assignment 'SEMI' { Statement::new($1?, Span::into($lexer,$span)) };
+      Assignment 'SEMI' { Statement::new($1?, Span::into($lexer,$span)) }
+    | DecFunc { Statement::new($1?, Span::into($lexer,$span)) };
 
 Term -> Result<Statement<'input>,lrpar::Lexeme<u32>>:
     Expr { Statement::new($1?, Span::into($lexer,$span)) };
 
+TypeInfo -> Result<Kind,lrpar::Lexeme<u32>>:
+      'INT'      { Ok(Kind::Int) }
+    | 'BOOL'     { Ok(Kind::Bool) } 
+    | 'VEC_INT'  { Ok(Kind::CollOfInt) }
+    | 'VEC_BOOL' { Ok(Kind::CollOfBool) };
+
 Assignment -> Result<Assign<'input>,lrpar::Lexeme<u32>>:
-    'LET' Identifier 'ASSIGN' Expr { Assign::new($2?, $4?, Span::into($lexer,$span)) };
+      'LET' Identifier 'COLON' TypeInfo 'EQ' Expr { Assign::new($2?, $4?, $6?, Span::into($lexer,$span)) }
+    | 'LET' Identifier 'ASSIGN' Expr              { Assign::new($2?, None, $4?, Span::into($lexer,$span)) };
 
 Expr -> Result<Expression<'input>,lrpar::Lexeme<u32>>:
       Expr 'ADD' Expr    { Expression::new(Operation::new($1?,Op::ADD,$3?,Span::into($lexer,$span))?, Span::into($lexer,$span)) }
@@ -61,6 +69,20 @@ FuncArgs -> Result<Vec<Expression<'input>>,lrpar::Lexeme<u32>>:
       'LPAR' 'RPAR' { Ok(Vec::new()) }
     | 'LPAR' ArgList 'RPAR' { Ok($2?) };
 
+DecFuncArg -> Result<FunctionArg<'input>,lrpar::Lexeme<u32>>:
+    Identifier 'COLON' TypeInfo { FunctionArg::new($1?,$3?,Span::into($lexer,$span)) };
+
+FuncArgDecList -> Result<Vec<FunctionArg<'input>>,lrpar::Lexeme<u32>>:
+      FuncArgDecList 'COMMA' DecFuncArg { let mut v = $1?; v.push($3?); Ok(v) }
+    | DecFuncArg                        { Ok(vec![$1?]) };
+
+DecFuncArgs -> Result<Vec<FunctionArg<'input>>,lrpar::Lexeme<u32>>:
+      'LPAR' 'RPAR' { Ok(Vec::new()) }
+    | 'LPAR' FuncArgDecList 'RPAR' { Ok($2?) };
+
+DecFunc -> Result<FunctionDec<'input>,lrpar::Lexeme<u32>>:
+    'FN' Identifier DecFuncArgs TypeInfo 'RBRACE' Body 'LBRACE' { FunctionDec::new($2?,$3?,$6?,$4?,Span::into($lexer,$span)) };
+
 ArgList -> Result<Vec<Expression<'input>>,lrpar::Lexeme<u32>>:
       ArgList 'COMMA' Expr { let mut v = $1?; v.push($3?); Ok(v) }
     | Expr { Ok( vec![$1?] ) };
@@ -78,6 +100,9 @@ TemplateVar -> Result<Template<'input>,lrpar::Lexeme<u32>>:
 %%
 
 use crate::internals::parser::span::{Span};
+use crate::internals::parser::ast::kind::{Kind};
+use crate::internals::parser::ast::args::{FunctionArg};
+use crate::internals::parser::ast::func::{FunctionDec};
 use crate::internals::parser::ast::ident::{Ident};
 use crate::internals::parser::ast::invoke::{Invoke};
 use crate::internals::parser::ast::expr::{Expression};

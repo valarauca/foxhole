@@ -1,6 +1,12 @@
 %%
 [0-9]+ "NUM"
 analyze "ANALYZE"
+compositional "COMP"
+fn "FN"
+int "INT"
+bool "BOOL"
+vec<int> "VEC_INT"
+vec<bool> "VEC_BOOL"
 let "LET"
 :- "TEMPLATE_FALLBACK"
 := "TEMPLATE_ASSIGN"
