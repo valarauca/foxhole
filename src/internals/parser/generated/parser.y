@@ -16,28 +16,24 @@
 
 Body -> Result<Vec<Statement<'input>>,lrpar::Lexeme<u32>>:
       Sttmnts Term { {let mut v = $1?; v.push($2?); Ok(v)} }
-    | Term { Ok(vec![$1?]) };
+    | Term         { Ok(vec![$1?]) };
 
 Sttmnts -> Result<Vec<Statement<'input>>,lrpar::Lexeme<u32>>:
       Sttmnts Sttmnt { {let mut v = $1?; v.push($2?); Ok(v) } }
-    | Sttmnt { Ok(vec![$1?]) };
+    | Sttmnt         { Ok(vec![$1?]) };
 
 Sttmnt -> Result<Statement<'input>,lrpar::Lexeme<u32>>:
       Assignment 'SEMI' { Statement::new($1?, Span::into($lexer,$span)) }
-    | DecFunc { Statement::new($1?, Span::into($lexer,$span)) };
+    | DecCmp 'SEMI'     { Statement::new($1?, Span::into($lexer,$span)) }
+    | DecFunc           { Statement::new($1?, Span::into($lexer,$span)) };
 
 Term -> Result<Statement<'input>,lrpar::Lexeme<u32>>:
     Expr { Statement::new($1?, Span::into($lexer,$span)) };
 
-TypeInfo -> Result<Kind,lrpar::Lexeme<u32>>:
-      'INT'      { Ok(Kind::Int) }
-    | 'BOOL'     { Ok(Kind::Bool) } 
-    | 'VEC_INT'  { Ok(Kind::CollOfInt) }
-    | 'VEC_BOOL' { Ok(Kind::CollOfBool) };
-
-Assignment -> Result<Assign<'input>,lrpar::Lexeme<u32>>:
-      'LET' Identifier 'COLON' TypeInfo 'EQ' Expr { Assign::new($2?, $4?, $6?, Span::into($lexer,$span)) }
-    | 'LET' Identifier 'ASSIGN' Expr              { Assign::new($2?, None, $4?, Span::into($lexer,$span)) };
+/*
+ * Expressions
+ *
+ */
 
 Expr -> Result<Expression<'input>,lrpar::Lexeme<u32>>:
       Expr 'ADD' Expr    { Expression::new(Operation::new($1?,Op::ADD,$3?,Span::into($lexer,$span))?, Span::into($lexer,$span)) }
@@ -59,15 +55,19 @@ Expr -> Result<Expression<'input>,lrpar::Lexeme<u32>>:
     | Identifier         { Expression::new($1?, Span::into($lexer,$span)) }
     | TemplateVar        { Expression::new($1?, Span::into($lexer,$span)) };
 
-Num -> Result<Span<'input>,lrpar::Lexeme<u32>>:
-    'NUM' { Ok(Span::new($lexer, None, $span)?) };
+/*
+ * Variable Assignments
+ *
+ */
 
-Func -> Result<Invoke<'input>,lrpar::Lexeme<u32>>:
-    Identifier FuncArgs { Invoke::new($1?, $2?, Span::into($lexer,$span)) };
+Assignment -> Result<Assign<'input>,lrpar::Lexeme<u32>>:
+      'LET' Identifier 'COLON' TypeInfo 'EQ' Expr { Assign::new($2?, $4?, $6?, Span::into($lexer,$span)) }
+    | 'LET' Identifier 'ASSIGN' Expr              { Assign::new($2?, None, $4?, Span::into($lexer,$span)) };
 
-FuncArgs -> Result<Vec<Expression<'input>>,lrpar::Lexeme<u32>>:
-      'LPAR' 'RPAR' { Ok(Vec::new()) }
-    | 'LPAR' ArgList 'RPAR' { Ok($2?) };
+/*
+ * Declaring Functions
+ *
+ */
 
 DecFuncArg -> Result<FunctionArg<'input>,lrpar::Lexeme<u32>>:
     Identifier 'COLON' TypeInfo { FunctionArg::new($1?,$3?,Span::into($lexer,$span)) };
@@ -83,9 +83,55 @@ DecFuncArgs -> Result<Vec<FunctionArg<'input>>,lrpar::Lexeme<u32>>:
 DecFunc -> Result<FunctionDec<'input>,lrpar::Lexeme<u32>>:
     'FN' Identifier DecFuncArgs TypeInfo 'RBRACE' Body 'LBRACE' { FunctionDec::new($2?,$3?,$6?,$4?,Span::into($lexer,$span)) };
 
+/*
+ * Invoking Functions
+ *
+ */
+
+Func -> Result<Invoke<'input>,lrpar::Lexeme<u32>>:
+    Identifier FuncArgs { Invoke::new($1?, $2?, Span::into($lexer,$span)) };
+
+FuncArgs -> Result<Vec<Expression<'input>>,lrpar::Lexeme<u32>>:
+      'LPAR' 'RPAR' { Ok(Vec::new()) }
+    | 'LPAR' ArgList 'RPAR' { Ok($2?) };
+
 ArgList -> Result<Vec<Expression<'input>>,lrpar::Lexeme<u32>>:
       ArgList 'COMMA' Expr { let mut v = $1?; v.push($3?); Ok(v) }
     | Expr { Ok( vec![$1?] ) };
+
+
+/*
+ * Compositional Functions (homomorphisms & monads)
+ *
+ */
+
+DecCmp -> Result<CompositionalFunction<'input>,lrpar::Lexeme<u32>>:
+    'COMP' Identifier 'LPAR' CompArg 'COMMA' CompArg 'COMMA' CompArg 'RPAR' TypeInfo { CompositionalFunction::new($2?,$4?,$6?,$8?,$10?,Span::into($lexer,$span)) };
+
+CompArg -> Result<CompositionalFunctionArg<'input>,lrpar::Lexeme<u32>>:
+      Bool        { CompositionalFunctionArg::new($1?,Span::into($lexer,$span)) }
+    | Num         { CompositionalFunctionArg::new($1?,Span::into($lexer,$span)) }
+    | TemplateVar { CompositionalFunctionArg::new($1?,Span::into($lexer,$span)) }
+    | Identifier  { CompositionalFunctionArg::new($1?,Span::into($lexer,$span)) }
+    | 'ADD'       { CompositionalFunctionArg::new(Op::ADD,Span::into($lexer,$span)) }
+    | 'SUB'       { CompositionalFunctionArg::new(Op::SUB,Span::into($lexer,$span)) }
+    | 'MUL'       { CompositionalFunctionArg::new(Op::MUL,Span::into($lexer,$span)) }
+    | 'AND'       { CompositionalFunctionArg::new(Op::AND,Span::into($lexer,$span)) }
+    | 'OR'        { CompositionalFunctionArg::new(Op::OR,Span::into($lexer,$span))  }
+    | 'XOR'       { CompositionalFunctionArg::new(Op::XOR,Span::into($lexer,$span)) };
+
+/*
+ * Primatives. Numbers, Booleans, Templates, Identifiers, and Types.
+ * Very simple things
+ *
+ */
+
+Num -> Result<Span<'input>,lrpar::Lexeme<u32>>:
+    'NUM' { Ok(Span::new($lexer, None, $span)?) };
+
+Bool -> Result<Span<'input>,lrpar::Lexeme<u32>>:
+      'TRUE'  { Ok(Span::new($lexer,None,$span)?) }
+    | 'FALSE' { Ok(Span::new($lexer,None,$span)?) };
 
 Identifier -> Result<Ident<'input>,lrpar::Lexeme<u32>>:
       'IDENT' { Ok( Ident::new( Span::new($lexer, None, $span)? ) ) };
@@ -97,12 +143,19 @@ TemplateVar -> Result<Template<'input>,lrpar::Lexeme<u32>>:
     | 'TEMPLATE_START' Identifier 'TEMPLATE_FALLBACK' 'NUM' 'RBRACE' { Ok(Template::new($2?, Span::new($lexer, None, $span)?, TemplateBehavior::fallback(Span::new($lexer, $4, None)?))) }
     | 'TEMPLATE_START' Identifier 'RBRACE' { Ok(Template::new($2?, Span::new($lexer, None, $span)?, None)) };
 
+TypeInfo -> Result<Kind,lrpar::Lexeme<u32>>:
+      'INT'      { Ok(Kind::Int) }
+    | 'BOOL'     { Ok(Kind::Bool) } 
+    | 'VEC_INT'  { Ok(Kind::CollOfInt) }
+    | 'VEC_BOOL' { Ok(Kind::CollOfBool) };
+
 %%
 
 use crate::internals::parser::span::{Span};
 use crate::internals::parser::ast::kind::{Kind};
 use crate::internals::parser::ast::args::{FunctionArg};
 use crate::internals::parser::ast::func::{FunctionDec};
+use crate::internals::parser::ast::comparg::{CompositionalFunctionArg,CompositionalFunction};
 use crate::internals::parser::ast::ident::{Ident};
 use crate::internals::parser::ast::invoke::{Invoke};
 use crate::internals::parser::ast::expr::{Expression};

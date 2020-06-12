@@ -1,4 +1,5 @@
 use crate::internals::parser::ast::assign::Assign;
+use crate::internals::parser::ast::comparg::CompositionalFunction;
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::ast::func::FunctionDec;
 use crate::internals::parser::span::{Span, Spanner};
@@ -32,9 +33,21 @@ impl<'input> Statement<'input> {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum State<'input> {
     Declaration(Box<Assign<'input>>),
-    Function(Box<FunctionDec<'input>>),
+    Func(Box<FunctionDec<'input>>),
+    CompFunc(Box<CompositionalFunction<'input>>),
     Termination(Box<Expression<'input>>),
 }
+from_stuff! {
+    'input;
+    State<'input>;
+    {
+        Assign<'input> => Declaration,
+        FunctionDec<'input> => Func,
+        CompositionalFunction<'input> => CompFunc,
+        Expression<'input> => Termination,
+    }
+}
+/*
 impl<'input> From<FunctionDec<'input>> for State<'input> {
     #[inline(always)]
     fn from(arg: FunctionDec<'input>) -> Self {
@@ -53,3 +66,4 @@ impl<'input> From<Assign<'input>> for State<'input> {
         Self::Declaration(Box::new(arg))
     }
 }
+*/

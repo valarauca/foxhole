@@ -1,10 +1,12 @@
 %%
 [0-9]+ "NUM"
 analyze "ANALYZE"
-compositional "COMP"
+cm "COMP"
 fn "FN"
 int "INT"
 bool "BOOL"
+true "TRUE"
+false "FALSE"
 vec<int> "VEC_INT"
 vec<bool> "VEC_BOOL"
 let "LET"
