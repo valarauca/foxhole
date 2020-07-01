@@ -1,2 +1,2 @@
 mod parser;
-mod validation;
+mod canonization;

@@ -1,10 +1,10 @@
-mod ast;
+pub mod ast;
 
 mod span;
 
 mod id;
-pub use self::id::Identifier;
+pub use self::id::Id;
 
-mod generated;
+pub mod generated;
 
 mod traits;

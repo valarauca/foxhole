@@ -6,10 +6,10 @@ use lrpar::{Lexeme, Lexer, NonStreamingLexer};
 use num_traits::{PrimInt, Unsigned};
 use try_from::TryFrom;
 
-use super::Identifier;
+use super::Id;
 
 /// Span contains information about where some text lies within the pre-parse structure
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone,Debug)]
 pub struct Span<'input> {
     // the source code line the span starts on
     start_line: u32,
@@ -24,11 +24,39 @@ pub struct Span<'input> {
     // the byte index of the source this token ends on
     end_byte: u32,
     // identifier is used to uniquely id this element.
-    identifier: Identifier,
+    identifier: Id,
     // the parsed text itself
     token: &'input str,
     // the line(s) (if it spans multiple lines) that contain this value.
     surrounding_lines: &'input str,
+}
+
+impl<'input> PartialEq for Span<'input> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.identifier.eq(&other.identifier)
+    }
+}
+impl<'input> Eq for Span<'input> { }
+impl<'input> PartialOrd for Span<'input> {
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.identifier.partial_cmp(&other.identifier)
+    }
+}
+impl<'input> Ord for Span<'input> {
+    #[inline]
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.identifier.cmp(&other.identifier)
+    }
+}
+impl<'input> std::hash::Hash for Span<'input> {
+    #[inline]
+    fn hash<H>(&self, hasher: &mut H)
+    where H: std::hash::Hasher,
+    {
+        self.identifier.hash(hasher);
+    }
 }
 
 impl<'input> Span<'input> {
@@ -62,7 +90,7 @@ impl<'input> Span<'input> {
         let ((start_line, start_column), (end_line, end_column)) = l.line_col(span.clone());
         let start_byte = span.start();
         let end_byte = span.end();
-        let identifier = Identifier::default();
+        let identifier = Id::default();
         Ok(Span {
             start_line: start_line as u32,
             end_line: end_line as u32,
