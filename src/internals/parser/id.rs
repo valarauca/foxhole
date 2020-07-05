@@ -2,7 +2,6 @@
 
 use std::sync::atomic::{AtomicU64, Ordering};
 
-
 /// Id is a -should be unique-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Id {
@@ -11,7 +10,7 @@ pub struct Id {
 
 /// IDENTIFIER is used to unique id each syntax element.
 /// This is accomplished by an atomic counter.
-/// 
+///
 const IDENTIFIER: AtomicU64 = AtomicU64::new(0);
 
 fn increment(arg: &AtomicU64) -> u64 {
@@ -24,4 +23,3 @@ impl Default for Id {
         Self { id }
     }
 }
-

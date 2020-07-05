@@ -9,7 +9,7 @@ use try_from::TryFrom;
 use super::Id;
 
 /// Span contains information about where some text lies within the pre-parse structure
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct Span<'input> {
     // the source code line the span starts on
     start_line: u32,
@@ -37,7 +37,7 @@ impl<'input> PartialEq for Span<'input> {
         self.identifier.eq(&other.identifier)
     }
 }
-impl<'input> Eq for Span<'input> { }
+impl<'input> Eq for Span<'input> {}
 impl<'input> PartialOrd for Span<'input> {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -53,7 +53,8 @@ impl<'input> Ord for Span<'input> {
 impl<'input> std::hash::Hash for Span<'input> {
     #[inline]
     fn hash<H>(&self, hasher: &mut H)
-    where H: std::hash::Hasher,
+    where
+        H: std::hash::Hasher,
     {
         self.identifier.hash(hasher);
     }
