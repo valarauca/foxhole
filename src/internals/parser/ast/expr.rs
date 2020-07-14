@@ -1,3 +1,4 @@
+use crate::internals::parser::ast::condition::Conditional;
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::ast::invoke::Invoke;
 use crate::internals::parser::ast::op::Operation;
@@ -28,6 +29,7 @@ pub enum Expr<'input> {
     Invoke(Box<Invoke<'input>>),
     Op(Box<Operation<'input>>),
     Parens(Box<Expression<'input>>),
+    Cond(Box<Conditional<'input>>),
 }
 macro_rules! expr_from {
     ($TypeName: ident; { $($Variant: ident => $Interior: ident);*}) => {
@@ -42,6 +44,7 @@ macro_rules! expr_from {
     };
 }
 expr_from! { Expr; {
+    Cond => Conditional;
     Var => Ident;
     Num => Span;
     Template => Template;

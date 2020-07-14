@@ -1,18 +1,18 @@
 #[allow(unused_imports)]
-pub use self::primative::int::{Integer,IntegerTrait,IntegerMutTrait};
+pub use self::primative::int::{Integer, IntegerMutTrait, IntegerTrait};
 pub mod primative;
 #[allow(unused_imports)]
-pub use self::primative::{Prim,PrimativeTrait,PrimativeMutTrait};
+pub use self::primative::{Prim, PrimativeMutTrait, PrimativeTrait};
 pub mod collection;
 #[allow(unused_imports)]
-pub use self::collection::{Collection,CollectionTrait,CollectionMutTrait};
+pub use self::collection::{Collection, CollectionMutTrait, CollectionTrait};
 pub mod function;
-pub use self::function::{Function,FunctionTrait,FunctionMutTrait};
+pub use self::function::{Function, FunctionMutTrait, FunctionTrait};
 #[allow(unused_imports)]
 pub mod compositional;
 
 /// Kind is a core "type" representation
-#[derive(Clone,PartialEq,Eq,PartialOrd,Ord,Hash,Debug)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Kind {
     Coll(Collection),
     Prim(Prim),
@@ -73,18 +73,17 @@ impl AsMut<Prim> for Kind {
     }
 }
 
-impl PrimativeTrait for Kind { }
+impl PrimativeTrait for Kind {}
 
-impl PrimativeMutTrait for Kind { }
+impl PrimativeMutTrait for Kind {}
 
 /// KindTrait offers public accessors which do not mutate the interior values
 pub trait KindTrait: AsRef<Kind> + PrimativeTrait {
-
     /// returns if this is a collection
     fn is_coll(&self) -> bool {
         match <Self as AsRef<Kind>>::as_ref(self) {
             &Kind::Coll(_) => true,
-            _ => false
+            _ => false,
         }
     }
 
@@ -92,7 +91,7 @@ pub trait KindTrait: AsRef<Kind> + PrimativeTrait {
     fn get_coll_len<'a>(&'a self) -> Option<&'a Integer> {
         match <Self as AsRef<Kind>>::as_ref(self) {
             &Kind::Coll(ref coll) => Some(coll.len()),
-            _ => None
+            _ => None,
         }
     }
 
@@ -105,16 +104,15 @@ pub trait KindTrait: AsRef<Kind> + PrimativeTrait {
     }
 }
 
-impl KindTrait for Kind { }
+impl KindTrait for Kind {}
 
 /// mutable methods on kinds
 pub trait KindMutTrait: AsMut<Kind> + KindTrait + PrimativeMutTrait {
-
     /// returns a mutable reference to the interior collection's length
     fn mut_len<'a>(&'a mut self) -> Option<&'a mut Integer> {
         match <Self as AsMut<Kind>>::as_mut(self) {
             &mut Kind::Coll(ref mut coll) => Some(coll.mut_len()),
-            _ => None
+            _ => None,
         }
     }
 
@@ -127,5 +125,4 @@ pub trait KindMutTrait: AsMut<Kind> + KindTrait + PrimativeMutTrait {
     }
 }
 
-impl KindMutTrait for Kind { }
-
+impl KindMutTrait for Kind {}

@@ -50,10 +50,18 @@ Expr -> Result<Expression<'input>,lrpar::Lexeme<u32>>:
     | Expr 'OR' Expr     { Expression::new(Operation::new($1?,Op::OR ,$3?,Span::into($lexer,$span))?, Span::into($lexer,$span)) }
     | Expr 'XOR' Expr    { Expression::new(Operation::new($1?,Op::XOR,$3?,Span::into($lexer,$span))?, Span::into($lexer,$span)) }
     | 'LPAR' Expr 'RPAR' { Expression::new($2?, Span::into($lexer,$span)) }
+    | Cond               { Expression::new($1?, Span::into($lexer,$span)) }
     | Func               { Expression::new($1?, Span::into($lexer,$span)) }
     | Num                { Expression::new($1?, Span::into($lexer,$span)) }
     | Identifier         { Expression::new($1?, Span::into($lexer,$span)) }
     | TemplateVar        { Expression::new($1?, Span::into($lexer,$span)) };
+
+/*
+ * Conditionals
+ *
+ */
+Cond -> Result<Conditional<'input>,lrpar::Lexeme<u32>>:
+    'IF' Expr 'RBRACE' Expr 'LBRACE' 'ELSE' 'RBRACE' Expr 'LBRACE' { Conditional::new($2?, $4?, $8?, Span::into($lexer, $span)) };
 
 /*
  * Variable Assignments
@@ -163,3 +171,4 @@ use crate::internals::parser::ast::template::{Template,TemplateBehavior};
 use crate::internals::parser::ast::assign::{Assign};
 use crate::internals::parser::ast::op::{Op,Operation};
 use crate::internals::parser::ast::statement::{Statement};
+use crate::internals::parser::ast::condition::{Conditional};

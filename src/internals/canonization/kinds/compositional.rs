@@ -1,9 +1,8 @@
-
-use super::{Kind, Prim, Function, FunctionTrait};
+use super::{Function, FunctionTrait, Kind, Prim};
 
 /// Compositional represnts a compositional function, or
 /// a homo-morphism
-#[derive(Clone,PartialEq,Eq,PartialOrd,Ord,Debug,Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct Compositional {
     identity: Function,
     primative: Function,
@@ -11,10 +10,9 @@ pub struct Compositional {
 }
 
 impl Compositional {
-
     /// Build a new compositional function
     #[allow(dead_code)]
-    pub fn new<I,P,C>(identity: I, prim: P, coll: C) -> Self
+    pub fn new<I, P, C>(identity: I, prim: P, coll: C) -> Self
     where
         Kind: From<I>,
         Function: From<P>,
@@ -31,11 +29,15 @@ impl Compositional {
         debug_assert_eq!(collection.args_len(), 2);
         debug_assert_eq!(identity.get_return(), primative.get_return());
         debug_assert_eq!(identity.get_return(), collection.get_return());
-        Self { identity, primative, collection }
+        Self {
+            identity,
+            primative,
+            collection,
+        }
     }
 }
 
-impl AsRef<Compositional> for Compositional { 
+impl AsRef<Compositional> for Compositional {
     #[inline(always)]
     fn as_ref<'a>(&'a self) -> &'a Self {
         self
@@ -51,16 +53,15 @@ impl AsMut<Compositional> for Compositional {
 
 /// Non-mutable things you can do with a compositional function
 pub trait CompositionalTrait: AsRef<Compositional> {
-
     fn get_identity<'a>(&'a self) -> &'a Function {
-        & self.as_ref().identity
+        &self.as_ref().identity
     }
 
     fn get_primative<'a>(&'a self) -> &'a Function {
-        & self.as_ref().primative
+        &self.as_ref().primative
     }
 
     fn get_collection<'a>(&'a self) -> &'a Function {
-        & self.as_ref().collection
+        &self.as_ref().collection
     }
 }

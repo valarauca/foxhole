@@ -1,6 +1,6 @@
 pub mod int;
 #[doc(no_inline)]
-pub use self::int::{Integer, IntegerTrait,IntegerMutTrait};
+pub use self::int::{Integer, IntegerMutTrait, IntegerTrait};
 
 /// Prim is a basic representation of a primative value.
 ///
@@ -13,7 +13,6 @@ pub enum Prim {
 }
 
 impl Prim {
-
     pub fn new_int_constant(constant: i64) -> Self {
         Self::from(constant)
     }
@@ -22,13 +21,13 @@ impl Prim {
         Self::Boolean
     }
 
-    pub fn new_int_dynamic<Max,Min,Const>(max: Max, min: Min, con: Const) -> Self
+    pub fn new_int_dynamic<Max, Min, Const>(max: Max, min: Min, con: Const) -> Self
     where
         Max: Into<Option<i64>>,
         Min: Into<Option<i64>>,
         Const: Into<Option<i64>>,
     {
-        Self::from(Integer::new(max,min,con))
+        Self::from(Integer::new(max, min, con))
     }
 }
 
@@ -60,7 +59,6 @@ impl AsMut<Prim> for Prim {
 
 /// Accessors on a Prim type
 pub trait PrimativeTrait: AsRef<Prim> {
-
     /// is this a boolean?
     fn is_bool(&self) -> bool {
         self.get_int().is_none()
@@ -75,27 +73,25 @@ pub trait PrimativeTrait: AsRef<Prim> {
     fn get_int<'a>(&'a self) -> Option<&'a Integer> {
         match self.as_ref() {
             &Prim::Int(ref int) => Some(int),
-            _ => None
+            _ => None,
         }
     }
 }
 
 /// For mutating the contents of this type
 pub trait PrimativeMutTrait: AsMut<Prim> + AsRef<Prim> + PrimativeTrait {
-
-
     /// return the mutable integer data
     fn get_mut_int<'a>(&'a mut self) -> Option<&'a mut Integer> {
         match self.as_mut() {
             &mut Prim::Int(ref mut int) => Some(int),
-            _ => None
+            _ => None,
         }
     }
 
     /// convert this too a boolean
     fn change_to_bool(&mut self) {
         if self.is_bool() {
-            return
+            return;
         }
         std::mem::replace(self.as_mut(), Prim::Boolean);
     }
@@ -117,6 +113,6 @@ pub trait PrimativeMutTrait: AsMut<Prim> + AsRef<Prim> + PrimativeTrait {
     }
 }
 
-impl PrimativeTrait for Prim { }
+impl PrimativeTrait for Prim {}
 
-impl PrimativeMutTrait for Prim { }
+impl PrimativeMutTrait for Prim {}

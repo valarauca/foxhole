@@ -1,4 +1,3 @@
-
 use super::Kind;
 
 macro_rules! implement_index {
@@ -29,20 +28,19 @@ macro_rules! implement_index {
 
 /// Function encodes information about functions
 /// non-homomorphic-functions.
-#[derive(Clone,PartialEq,Eq,PartialOrd,Ord,Debug,Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct Function {
     args: Box<[Kind]>,
     ret: Kind,
 }
 
 impl Function {
-
     /// builds a new function
     #[allow(dead_code)]
-    pub fn new<R,I>(ret: R, args: I) -> Self
+    pub fn new<R, I>(ret: R, args: I) -> Self
     where
         Kind: From<R>,
-        I: IntoIterator<Item=Kind>,
+        I: IntoIterator<Item = Kind>,
     {
         let args = args.into_iter().collect::<Vec<Kind>>().into_boxed_slice();
         let ret = Kind::from(ret);
@@ -72,8 +70,7 @@ impl AsMut<Function> for Function {
 }
 
 /// accessor methods for functions
-pub trait FunctionTrait: AsRef<Function> + std::ops::Index<usize,Output=Kind> {
-
+pub trait FunctionTrait: AsRef<Function> + std::ops::Index<usize, Output = Kind> {
     /// how many arguments are there
     fn args_len(&self) -> usize {
         self.as_ref().args.len()
@@ -81,18 +78,17 @@ pub trait FunctionTrait: AsRef<Function> + std::ops::Index<usize,Output=Kind> {
 
     /// fetches the functions return kind
     fn get_return<'a>(&'a self) -> &'a Kind {
-        & self.as_ref().ret
+        &self.as_ref().ret
     }
 }
 
-impl FunctionTrait for Function { }
+impl FunctionTrait for Function {}
 
 pub trait FunctionMutTrait: AsMut<Function> + FunctionTrait + std::ops::IndexMut<usize> {
-
     /// get return argument, but mutable
     fn get_mut_return<'a>(&'a mut self) -> &'a mut Kind {
         &mut self.as_mut().ret
     }
 }
 
-impl FunctionMutTrait for Function { }
+impl FunctionMutTrait for Function {}

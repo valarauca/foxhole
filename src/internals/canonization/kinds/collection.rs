@@ -1,21 +1,26 @@
-
 #[allow(unused_imports)]
-use crate::internals::canonization::kinds::primative::{Prim,PrimativeTrait,PrimativeMutTrait};
+use crate::internals::canonization::kinds::primative::int::{
+    Integer, IntegerMutTrait, IntegerTrait,
+};
 #[allow(unused_imports)]
-use crate::internals::canonization::kinds::primative::int::{Integer,IntegerTrait,IntegerMutTrait};
+use crate::internals::canonization::kinds::primative::{Prim, PrimativeMutTrait, PrimativeTrait};
 
 /// Collection of primatives
-#[derive(Copy,Clone,PartialEq,Eq,PartialOrd,Ord,Hash,Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct Collection {
     interior: Prim,
     size: Integer,
 }
 
 impl Collection {
-
     /// build a new collection
     #[allow(dead_code)]
-    pub fn new<Interior, MaxSize, MinSize, ConstantSize>(kind: Interior, max: MaxSize, min: MinSize, con: ConstantSize) -> Self
+    pub fn new<Interior, MaxSize, MinSize, ConstantSize>(
+        kind: Interior,
+        max: MaxSize,
+        min: MinSize,
+        con: ConstantSize,
+    ) -> Self
     where
         Prim: From<Interior>,
         MaxSize: Into<Option<i64>>,
@@ -24,7 +29,7 @@ impl Collection {
     {
         Self {
             interior: Prim::from(kind),
-            size: Integer::new(max,min,con),
+            size: Integer::new(max, min, con),
         }
     }
 }
@@ -62,13 +67,12 @@ impl AsMut<Prim> for Collection {
     }
 }
 
-impl PrimativeTrait for Collection { }
+impl PrimativeTrait for Collection {}
 
-impl PrimativeMutTrait for Collection { }
+impl PrimativeMutTrait for Collection {}
 
 /// CollectionTrait are standard accessors on a collection
 pub trait CollectionTrait: AsRef<Collection> + PrimativeTrait {
-
     /// is the interior type a boolean
     fn contains_bool(&self) -> bool {
         <Self as PrimativeTrait>::is_bool(self)
@@ -90,16 +94,16 @@ pub trait CollectionTrait: AsRef<Collection> + PrimativeTrait {
     }
 }
 
-impl CollectionTrait for Collection { }
-
+impl CollectionTrait for Collection {}
 
 /// CollectionMutTrait permits mutability
-pub trait CollectionMutTrait: AsMut<Collection> + CollectionTrait + PrimativeTrait + PrimativeMutTrait {
-
+pub trait CollectionMutTrait:
+    AsMut<Collection> + CollectionTrait + PrimativeTrait + PrimativeMutTrait
+{
     /// return the mutable interior length if it exists
     fn mut_len<'a>(&'a mut self) -> &'a mut Integer {
         &mut <Self as AsMut<Collection>>::as_mut(self).size
     }
 }
 
-impl CollectionMutTrait for Collection { }
+impl CollectionMutTrait for Collection {}

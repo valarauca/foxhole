@@ -20,6 +20,7 @@ macro_rules! from_stuff {
 pub mod args;
 pub mod assign;
 pub mod comparg;
+pub mod condition;
 pub mod expr;
 pub mod func;
 pub mod ident;
