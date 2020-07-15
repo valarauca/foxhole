@@ -237,6 +237,11 @@ pub trait Spanner<'input>: AsRef<Span<'input>> {
     fn get_surrounding_lines(&self) -> &'input str {
         self.as_ref().surrounding_lines
     }
+
+    /// returns the unique id for this span
+    fn get_id(&self) -> Id {
+        self.as_ref().identifier
+    }
 }
 
 #[test]
