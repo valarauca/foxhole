@@ -1,12 +1,16 @@
+use serde::{Deserialize, Serialize};
+
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::ast::kind::Kind;
 use crate::internals::parser::span::{Span, Spanner};
 
 /// Argument to a function
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct FunctionArg<'input> {
+    #[serde(borrow)]
     pub name: Box<Ident<'input>>,
     pub kind: Box<Kind>,
+    #[serde(borrow)]
     pub span: Box<Span<'input>>,
 }
 impl<'input> FunctionArg<'input> {

@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::internals::parser::ast::args::FunctionArg;
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::ast::kind::Kind;
@@ -5,11 +7,15 @@ use crate::internals::parser::ast::statement::Statement;
 use crate::internals::parser::span::{Span, Spanner};
 
 /// Declaring a function
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct FunctionDec<'input> {
+    #[serde(borrow)]
     pub name: Box<Ident<'input>>,
+    #[serde(borrow)]
     pub span: Box<Span<'input>>,
+    #[serde(borrow)]
     pub args: Vec<FunctionArg<'input>>,
+    #[serde(borrow)]
     pub body: Vec<Statement<'input>>,
     pub ret: Box<Kind>,
 }

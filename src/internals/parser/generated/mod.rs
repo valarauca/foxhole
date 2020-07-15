@@ -14,6 +14,7 @@ pub use self::lexer::lexer_l::lexerdef;
 pub mod parser;
 pub use self::parser::parser_y::{parse, token_epp};
 
+/// master function for parsing source code
 #[allow(dead_code)]
 pub fn parse_code<'input, E>(source: &'input str) -> Result<Vec<Statement<'input>>, Vec<E>>
 where
@@ -23,6 +24,24 @@ where
     {
         let def2 = def.lexer(source);
         parse_source(source, &def2, &parse)
+    }
+}
+
+/// master function for serializing source code
+#[allow(dead_code)]
+pub fn serialize_ast<'input>(source: &[Statement<'input>]) -> Result<String, String> {
+    match serde_json::to_string_pretty(source) {
+        Ok(arg) => Ok(arg),
+        Err(e) => Err(format!("{:?}", e)),
+    }
+}
+
+/// master deserialize function
+#[allow(dead_code)]
+pub fn deserialize_ast<'input>(source: &'input str) -> Result<Vec<Statement<'input>>, String> {
+    match serde_json::from_str(source) {
+        Ok(arg) => Ok(arg),
+        Err(e) => Err(format!("{:?}", e)),
     }
 }
 

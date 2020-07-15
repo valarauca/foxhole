@@ -82,77 +82,77 @@ pub(in crate::internals::parser) mod lexer_l {
         LRNonStreamingLexerDef::from_rules(rules)
     }
     #[allow(dead_code)]
-    pub const T_TEMPLATE_FALLBACK: u32 = 32;
+    pub const T_NUM: u32 = 26;
     #[allow(dead_code)]
-    pub const T_GE: u32 = 9;
+    pub const T_LE: u32 = 10;
     #[allow(dead_code)]
-    pub const T_ADD: u32 = 1;
+    pub const T_IDENT: u32 = 29;
     #[allow(dead_code)]
     pub const T_LT: u32 = 8;
     #[allow(dead_code)]
     pub const T_INT: u32 = 33;
     #[allow(dead_code)]
-    pub const T_MUL: u32 = 3;
-    #[allow(dead_code)]
-    pub const T_OR: u32 = 12;
+    pub const T_COMMA: u32 = 23;
     #[allow(dead_code)]
     pub const T_RPAR: u32 = 15;
     #[allow(dead_code)]
-    pub const T_IDENT: u32 = 29;
-    #[allow(dead_code)]
-    pub const T_TEMPLATE_START: u32 = 30;
+    pub const T_OR: u32 = 12;
     #[allow(dead_code)]
     pub const T_NE: u32 = 6;
     #[allow(dead_code)]
-    pub const T_LET: u32 = 20;
+    pub const T_MUL: u32 = 3;
     #[allow(dead_code)]
-    pub const T_LBRACE: u32 = 18;
+    pub const T_ADD: u32 = 1;
     #[allow(dead_code)]
-    pub const T_AND: u32 = 11;
+    pub const T_TEMPLATE_ASSIGN: u32 = 31;
     #[allow(dead_code)]
-    pub const T_NUM: u32 = 26;
+    pub const T_VEC_BOOL: u32 = 36;
     #[allow(dead_code)]
-    pub const T_GT: u32 = 7;
+    pub const T_VEC_INT: u32 = 35;
     #[allow(dead_code)]
-    pub const T_LPAR: u32 = 14;
+    pub const T_DIV: u32 = 4;
+    #[allow(dead_code)]
+    pub const T_EQ: u32 = 5;
+    #[allow(dead_code)]
+    pub const T_SUB: u32 = 2;
+    #[allow(dead_code)]
+    pub const T_BOOL: u32 = 34;
     #[allow(dead_code)]
     pub const T_TRUE: u32 = 27;
     #[allow(dead_code)]
     pub const T_ASSIGN: u32 = 22;
     #[allow(dead_code)]
-    pub const T_BOOL: u32 = 34;
+    pub const T_TEMPLATE_FALLBACK: u32 = 32;
     #[allow(dead_code)]
-    pub const T_ELSE: u32 = 19;
+    pub const T_LPAR: u32 = 14;
     #[allow(dead_code)]
     pub const T_COLON: u32 = 21;
     #[allow(dead_code)]
-    pub const T_LE: u32 = 10;
+    pub const T_ELSE: u32 = 19;
     #[allow(dead_code)]
-    pub const T_COMP: u32 = 25;
-    #[allow(dead_code)]
-    pub const T_SUB: u32 = 2;
+    pub const T_GT: u32 = 7;
     #[allow(dead_code)]
     pub const T_RBRACE: u32 = 17;
     #[allow(dead_code)]
-    pub const T_EQ: u32 = 5;
+    pub const T_LBRACE: u32 = 18;
     #[allow(dead_code)]
-    pub const T_XOR: u32 = 13;
-    #[allow(dead_code)]
-    pub const T_VEC_INT: u32 = 35;
-    #[allow(dead_code)]
-    pub const T_TEMPLATE_ASSIGN: u32 = 31;
-    #[allow(dead_code)]
-    pub const T_SEMI: u32 = 0;
-    #[allow(dead_code)]
-    pub const T_DIV: u32 = 4;
-    #[allow(dead_code)]
-    pub const T_COMMA: u32 = 23;
-    #[allow(dead_code)]
-    pub const T_VEC_BOOL: u32 = 36;
+    pub const T_AND: u32 = 11;
     #[allow(dead_code)]
     pub const T_IF: u32 = 16;
     #[allow(dead_code)]
-    pub const T_FN: u32 = 24;
+    pub const T_SEMI: u32 = 0;
+    #[allow(dead_code)]
+    pub const T_COMP: u32 = 25;
+    #[allow(dead_code)]
+    pub const T_XOR: u32 = 13;
+    #[allow(dead_code)]
+    pub const T_TEMPLATE_START: u32 = 30;
     #[allow(dead_code)]
     pub const T_FALSE: u32 = 28;
+    #[allow(dead_code)]
+    pub const T_GE: u32 = 9;
+    #[allow(dead_code)]
+    pub const T_FN: u32 = 24;
+    #[allow(dead_code)]
+    pub const T_LET: u32 = 20;
 }

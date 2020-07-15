@@ -1,13 +1,18 @@
+use serde::{Deserialize, Serialize};
+
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::ast::kind::Kind;
 use crate::internals::parser::ast::op::Op;
 use crate::internals::parser::ast::template::Template;
 use crate::internals::parser::span::{Span, Spanner};
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum CompositionalArg<'input> {
+    #[serde(borrow)]
     Primative(Box<Span<'input>>),
+    #[serde(borrow)]
     Template(Box<Template<'input>>),
+    #[serde(borrow)]
     Func(Box<Ident<'input>>),
     Op(Box<Op>),
 }
@@ -23,9 +28,11 @@ from_stuff! {
 }
 
 /// Argument to a compositional function
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct CompositionalFunctionArg<'input> {
+    #[serde(borrow)]
     pub arg: CompositionalArg<'input>,
+    #[serde(borrow)]
     pub span: Box<Span<'input>>,
 }
 impl<'input> CompositionalFunctionArg<'input> {
@@ -50,13 +57,18 @@ impl<'input> AsRef<Span<'input>> for CompositionalFunctionArg<'input> {
 impl<'input> Spanner<'input> for CompositionalFunctionArg<'input> {}
 
 /// Declaring a compositional function
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct CompositionalFunction<'input> {
+    #[serde(borrow)]
     pub name: Box<Ident<'input>>,
+    #[serde(borrow)]
     pub null_arg: Box<CompositionalFunctionArg<'input>>,
+    #[serde(borrow)]
     pub single_arg: Box<CompositionalFunctionArg<'input>>,
+    #[serde(borrow)]
     pub collection_arg: Box<CompositionalFunctionArg<'input>>,
     pub ret: Box<Kind>,
+    #[serde(borrow)]
     pub span: Box<Span<'input>>,
 }
 impl<'input> AsRef<Span<'input>> for CompositionalFunction<'input> {

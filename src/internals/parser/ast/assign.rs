@@ -1,14 +1,19 @@
+use serde::{Deserialize, Serialize};
+
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::ast::kind::Kind;
 use crate::internals::parser::span::{Span, Spanner};
 
 /// Assign represents an assignment
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Assign<'input> {
+    #[serde(borrow)]
     pub name: Box<Ident<'input>>,
+    #[serde(borrow)]
     pub expr: Box<Expression<'input>>,
     pub kind: Box<Option<Kind>>,
+    #[serde(borrow)]
     pub span: Box<Span<'input>>,
 }
 impl<'input> AsRef<Span<'input>> for Assign<'input> {

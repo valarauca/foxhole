@@ -1,12 +1,17 @@
+use serde::{Deserialize, Serialize};
+
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::span::{Span, Spanner};
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Operation<'input> {
+    #[serde(borrow)]
     pub left: Box<Expression<'input>>,
     pub op: Op,
+    #[serde(borrow)]
     pub right: Box<Expression<'input>>,
-    pub span: Span<'input>,
+    #[serde(borrow)]
+    pub span: Box<Span<'input>>,
 }
 impl<'input> AsRef<Span<'input>> for Operation<'input> {
     fn as_ref(&self) -> &Span<'input> {
@@ -24,7 +29,7 @@ impl<'input> Operation<'input> {
     where
         F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
     {
-        let span = span()?;
+        let span = Box::new(span()?);
         let left = Box::new(left);
         let right = Box::new(right);
         Ok(Self {
@@ -36,7 +41,7 @@ impl<'input> Operation<'input> {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Op {
     ADD,
     SUB,

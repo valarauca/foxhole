@@ -17,3 +17,6 @@ lrlex = { git = "https://github.com/valarauca/grmtools", rev = "01670e4" }
 lrpar = { git = "https://github.com/valarauca/grmtools", rev = "01670e4" }
 num-traits = "0.2.11"
 try_from = "0.3.2"
+serde = "1.0.114"
+serde_json = "1.0"
+clap = "2.33.1"

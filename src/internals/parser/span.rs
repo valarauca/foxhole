@@ -1,5 +1,7 @@
 use std::hash::Hash;
 
+use serde::{Deserialize, Serialize};
+
 // cargo doesn't realize I'm using this in a function signature.
 #[allow(unused_imports)]
 use lrpar::{Lexeme, Lexer, NonStreamingLexer};
@@ -9,7 +11,7 @@ use try_from::TryFrom;
 use super::Id;
 
 /// Span contains information about where some text lies within the pre-parse structure
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Span<'input> {
     // the source code line the span starts on
     start_line: u32,
@@ -26,8 +28,10 @@ pub struct Span<'input> {
     // identifier is used to uniquely id this element.
     identifier: Id,
     // the parsed text itself
+    #[serde(borrow)]
     token: &'input str,
     // the line(s) (if it spans multiple lines) that contain this value.
+    #[serde(borrow)]
     surrounding_lines: &'input str,
 }
 

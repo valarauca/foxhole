@@ -1,12 +1,18 @@
+use serde::{Deserialize, Serialize};
+
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::span::{Span, Spanner};
 
 /// Conditionals manage things like `if else`
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Conditional<'input> {
+    #[serde(borrow)]
     pub condition: Box<Expression<'input>>,
+    #[serde(borrow)]
     pub true_case: Box<Expression<'input>>,
+    #[serde(borrow)]
     pub false_case: Box<Expression<'input>>,
+    #[serde(borrow)]
     pub span: Box<Span<'input>>,
 }
 impl<'input> AsRef<Span<'input>> for Conditional<'input> {

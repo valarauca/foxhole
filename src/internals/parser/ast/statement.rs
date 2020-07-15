@@ -1,12 +1,16 @@
+use serde::{Deserialize, Serialize};
+
 use crate::internals::parser::ast::assign::Assign;
 use crate::internals::parser::ast::comparg::CompositionalFunction;
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::ast::func::FunctionDec;
 use crate::internals::parser::span::{Span, Spanner};
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Statement<'input> {
+    #[serde(borrow)]
     pub sttm: Box<State<'input>>,
+    #[serde(borrow)]
     pub span: Box<Span<'input>>,
 }
 impl<'input> AsRef<Span<'input>> for Statement<'input> {
@@ -30,11 +34,15 @@ impl<'input> Statement<'input> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum State<'input> {
+    #[serde(borrow)]
     Declaration(Box<Assign<'input>>),
+    #[serde(borrow)]
     Func(Box<FunctionDec<'input>>),
+    #[serde(borrow)]
     CompFunc(Box<CompositionalFunction<'input>>),
+    #[serde(borrow)]
     Termination(Box<Expression<'input>>),
 }
 from_stuff! {
