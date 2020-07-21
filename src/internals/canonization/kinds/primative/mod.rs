@@ -105,7 +105,7 @@ pub trait PrimativeMutTrait: AsMut<Prim> + AsRef<Prim> + PrimativeTrait {
     /// convert to a constant int
     fn change_to_constant_int(&mut self, constant: i64) {
         if self.is_bool() {
-            std::mem::replace(self.as_mut(), Prim::from(constant));
+            let _ = std::mem::replace(self.as_mut(), Prim::from(constant));
         } else {
             match self.get_mut_int() {
                 Option::None => {

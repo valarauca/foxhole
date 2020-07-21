@@ -95,7 +95,7 @@ where
             errors_out.push(E::parse_error(def2, source, &span));
         }
         Option::Some(Ok(result)) => {
-            replace(&mut return_value, Some(result));
+            return_value = Some(result);
         }
         Option::None => {
             // nothing to do

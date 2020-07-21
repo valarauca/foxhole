@@ -10,7 +10,7 @@ pub struct Id {
 impl Id {
     /// Sets the global ID value based on the highest value found while deserializing
     pub(in crate::internals::parser) fn set_id(&self) {
-        let mut curr = 0;
+        let mut curr: u64;
         loop {
             curr = IDENTIFIER.load(Ordering::SeqCst);
             if self.id > curr {

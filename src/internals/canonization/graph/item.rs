@@ -1,30 +1,23 @@
-use serde::{Deserialize, Serialize};
-
 use crate::internals::canonization::kinds::workable::{TypeData, TypeDataTrait};
-use crate::internals::parser::ast::statement::{State, Statement};
+use crate::internals::parser::ast::Representation;
 use crate::internals::parser::span::{Span, Spanner};
 
 /// Item is a core structure used to represent the AST
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct Item<'temp, 'input: 'temp> {
-    statement: &'temp Statement<'input>,
+    data: Representation<'temp, 'input>,
     type_info: TypeData,
 }
 
-impl<'temp, 'input: 'temp> From<&'temp Statement<'input>> for Item<'temp, 'input> {
-    fn from(statement: &'temp Statement<'input>) -> Self {
-        let type_info = match statement.as_ref() {
-            &State::Declaration(ref assign) => TypeData::from(&assign.kind),
-            &State::Func(ref func) => TypeData::from(func.as_ref()),
-            _ => {
-                // everything else needs more data
-                TypeData::default()
-            }
-        };
-        Item {
-            statement,
-            type_info,
-        }
+impl<'temp, 'input: 'temp> Item<'temp, 'input> {
+    pub fn new<T>(arg: T) -> Item<'temp, 'input>
+    where
+        Representation<'temp, 'input>: From<T>,
+    {
+        let data = Representation::from(arg);
+        let type_info = TypeData::default();
+        // TODO recover type info
+        Self { data, type_info }
     }
 }
 
@@ -47,7 +40,7 @@ impl<'temp, 'input: 'temp> TypeDataTrait for Item<'temp, 'input> {}
 impl<'temp, 'input: 'temp> AsRef<Span<'input>> for Item<'temp, 'input> {
     #[inline(always)]
     fn as_ref<'a>(&'a self) -> &'a Span<'input> {
-        self.statement.as_ref()
+        self.data.as_ref()
     }
 }
 

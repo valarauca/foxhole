@@ -187,7 +187,7 @@ pub trait TypeDataTrait: AsRef<TypeData> + AsMut<TypeData> {
         if !self.is_none() {
             panic!("overriding type that already exists");
         }
-        std::mem::replace(self.as_mut(), TypeData::from(arg));
+        let _ = std::mem::replace(self.as_mut(), TypeData::from(arg));
     }
 
     fn get_mut_coll<'a>(&'a mut self) -> Option<&'a mut Collection> {
