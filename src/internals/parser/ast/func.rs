@@ -52,4 +52,14 @@ impl<'input> AsRef<Span<'input>> for FunctionDec<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for FunctionDec<'input> {}
+impl<'input> Spanner<'input> for FunctionDec<'input> {
+    fn fields(&self) {
+        self.set_id();
+        for arg in self.args.iter() {
+            arg.fields();
+        }
+        for state in self.body.iter() {
+            state.fields();
+        }
+    }
+}

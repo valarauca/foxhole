@@ -1,40 +1,14 @@
-use super::{Function, FunctionTrait, Kind, Prim};
+use serde::{Deserialize, Serialize};
+
+use super::{Function, FunctionTrait};
 
 /// Compositional represnts a compositional function, or
 /// a homo-morphism
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct Compositional {
     identity: Function,
     primative: Function,
     collection: Function,
-}
-
-impl Compositional {
-    /// Build a new compositional function
-    #[allow(dead_code)]
-    pub fn new<I, P, C>(identity: I, prim: P, coll: C) -> Self
-    where
-        Kind: From<I>,
-        Function: From<P>,
-        Function: From<C>,
-    {
-        let identity = Function::new(identity, None);
-        let primative = Function::from(prim);
-        let collection = Function::from(coll);
-
-        // compositional functions require specific things
-        // always be true
-        debug_assert_eq!(primative.args_len(), 1);
-        debug_assert_eq!(identity.args_len(), 0);
-        debug_assert_eq!(collection.args_len(), 2);
-        debug_assert_eq!(identity.get_return(), primative.get_return());
-        debug_assert_eq!(identity.get_return(), collection.get_return());
-        Self {
-            identity,
-            primative,
-            collection,
-        }
-    }
 }
 
 impl AsRef<Compositional> for Compositional {

@@ -34,4 +34,9 @@ impl<'input> AsRef<Span<'input>> for FunctionArg<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for FunctionArg<'input> {}
+impl<'input> Spanner<'input> for FunctionArg<'input> {
+    fn fields(&self) {
+        self.set_id();
+        self.name.fields();
+    }
+}

@@ -19,7 +19,15 @@ impl<'input> AsRef<Span<'input>> for Invoke<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for Invoke<'input> {}
+impl<'input> Spanner<'input> for Invoke<'input> {
+    fn fields(&self) {
+        self.set_id();
+        self.name.fields();
+        for arg in self.args.as_ref().iter() {
+            arg.fields();
+        }
+    }
+}
 
 impl<'input> Invoke<'input> {
     pub(in crate::internals::parser) fn new<I, F>(

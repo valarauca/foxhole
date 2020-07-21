@@ -20,7 +20,14 @@ impl<'input> AsRef<Span<'input>> for Conditional<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for Conditional<'input> {}
+impl<'input> Spanner<'input> for Conditional<'input> {
+    fn fields(&self) {
+        self.set_id();
+        self.condition.fields();
+        self.true_case.fields();
+        self.false_case.fields();
+    }
+}
 
 impl<'input> Conditional<'input> {
     pub(in crate::internals::parser) fn new<S>(

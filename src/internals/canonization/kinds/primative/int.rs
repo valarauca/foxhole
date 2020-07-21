@@ -1,10 +1,12 @@
+use serde::{Deserialize, Serialize};
+
 use std::ops::RangeInclusive;
 
 /// Integer is the basic representation of an integer value.
 ///
 /// It holds information concerning the maximum, or minimum,
 /// and variability of the value.
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct Integer {
     maximum: Option<i64>,
     minimum: Option<i64>,

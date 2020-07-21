@@ -20,4 +20,8 @@ impl<'input> AsRef<Span<'input>> for Ident<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for Ident<'input> {}
+impl<'input> Spanner<'input> for Ident<'input> {
+    fn fields(&self) {
+        self.set_id();
+    }
+}

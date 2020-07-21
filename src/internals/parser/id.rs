@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{spin_loop_hint, AtomicU64, Ordering};
 
 use serde::{Deserialize, Serialize};
 
@@ -6,6 +6,22 @@ use serde::{Deserialize, Serialize};
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Id {
     id: u64,
+}
+impl Id {
+    /// Sets the global ID value based on the highest value found while deserializing
+    pub(in crate::internals::parser) fn set_id(&self) {
+        let mut curr = 0;
+        loop {
+            curr = IDENTIFIER.load(Ordering::SeqCst);
+            if self.id > curr {
+                curr = IDENTIFIER.compare_and_swap(curr, self.id, Ordering::SeqCst);
+            }
+            if self.id <= curr {
+                return;
+            }
+            spin_loop_hint();
+        }
+    }
 }
 
 /// IDENTIFIER is used to unique id each syntax element.

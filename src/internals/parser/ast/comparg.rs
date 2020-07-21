@@ -6,6 +6,7 @@ use crate::internals::parser::ast::op::Op;
 use crate::internals::parser::ast::template::Template;
 use crate::internals::parser::span::{Span, Spanner};
 
+/*
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum CompositionalArg<'input> {
     #[serde(borrow)]
@@ -16,14 +17,16 @@ pub enum CompositionalArg<'input> {
     Func(Box<Ident<'input>>),
     Op(Box<Op>),
 }
-from_stuff! {
-    'input;
-    CompositionalArg<'input>;
-    {
-        Span<'input> => Primative,
-        Template<'input> => Template,
-        Ident<'input> => Func,
-        Op => Op,
+*/
+stuff! {
+    Name: CompositionalArg;
+    Trait: CompositionalArgTrait;
+    Lifetime: 'input;
+    From: {
+        Span<'input> => Primative => is_prim => get_prim,
+        Template<'input> => Template => is_template => get_template,
+        Ident<'input> => Func => is_func => get_func,
+        Op<'input> => Op => is_op => get_op,
     }
 }
 
@@ -54,7 +57,17 @@ impl<'input> AsRef<Span<'input>> for CompositionalFunctionArg<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for CompositionalFunctionArg<'input> {}
+impl<'input> Spanner<'input> for CompositionalFunctionArg<'input> {
+    fn fields(&self) {
+        self.set_id();
+        match &self.arg {
+            CompositionalArg::Primative(ref a) => a.set_id(),
+            CompositionalArg::Template(ref b) => b.fields(),
+            CompositionalArg::Func(ref c) => c.fields(),
+            _ => {}
+        };
+    }
+}
 
 /// Declaring a compositional function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -76,7 +89,15 @@ impl<'input> AsRef<Span<'input>> for CompositionalFunction<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for CompositionalFunction<'input> {}
+impl<'input> Spanner<'input> for CompositionalFunction<'input> {
+    fn fields(&self) {
+        self.set_id();
+        self.name.fields();
+        self.null_arg.fields();
+        self.single_arg.fields();
+        self.collection_arg.fields();
+    }
+}
 impl<'input> CompositionalFunction<'input> {
     pub(in crate::internals::parser) fn new<S>(
         name: Ident<'input>,

@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 pub mod int;
 #[doc(no_inline)]
 pub use self::int::{Integer, IntegerMutTrait, IntegerTrait};
@@ -6,7 +8,7 @@ pub use self::int::{Integer, IntegerMutTrait, IntegerTrait};
 ///
 /// This is used to define higher order concepts such as
 /// "is this a collection of a int/bool".
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub enum Prim {
     Int(Integer),
     Boolean,
@@ -28,6 +30,10 @@ impl Prim {
         Const: Into<Option<i64>>,
     {
         Self::from(Integer::new(max, min, con))
+    }
+
+    pub fn new_idk_int() -> Self {
+        Self::from(Integer::new(None, None, None))
     }
 }
 

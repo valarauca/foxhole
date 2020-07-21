@@ -1,8 +1,8 @@
 pub mod ast;
 
-mod span;
+pub mod span;
 
-mod id;
+pub mod id;
 pub use self::id::Id;
 
 pub mod generated;

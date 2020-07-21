@@ -6,7 +6,7 @@ use num_traits::{PrimInt, Unsigned};
 use try_from::TryFrom;
 
 use crate::internals::parser::ast::statement::Statement;
-use crate::internals::parser::span::Span;
+use crate::internals::parser::span::{Span, Spanner};
 use crate::internals::parser::traits::SyntaxError;
 
 pub mod lexer;
@@ -39,8 +39,14 @@ pub fn serialize_ast<'input>(source: &[Statement<'input>]) -> Result<String, Str
 /// master deserialize function
 #[allow(dead_code)]
 pub fn deserialize_ast<'input>(source: &'input str) -> Result<Vec<Statement<'input>>, String> {
-    match serde_json::from_str(source) {
-        Ok(arg) => Ok(arg),
+    match serde_json::from_str::<Vec<Statement<'input>>>(source) {
+        Ok(arg) => {
+            for item in arg.iter() {
+                // initialize global ID tracking
+                item.fields();
+            }
+            Ok(arg)
+        }
         Err(e) => Err(format!("{:?}", e)),
     }
 }

@@ -21,7 +21,13 @@ impl<'input> AsRef<Span<'input>> for Assign<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for Assign<'input> {}
+impl<'input> Spanner<'input> for Assign<'input> {
+    fn fields(&self) {
+        self.set_id();
+        self.name.fields();
+        self.expr.fields();
+    }
+}
 
 impl<'input> Assign<'input> {
     pub(in crate::internals::parser) fn new<F, K>(

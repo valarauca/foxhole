@@ -1,4 +1,9 @@
-use super::Kind;
+use serde::{Deserialize, Serialize};
+
+use crate::internals::parser::ast::args::FunctionArg;
+use crate::internals::parser::ast::func::FunctionDec;
+
+use super::workable::TypeData;
 
 macro_rules! implement_index {
     (
@@ -28,30 +33,29 @@ macro_rules! implement_index {
 
 /// Function encodes information about functions
 /// non-homomorphic-functions.
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct Function {
-    args: Box<[Kind]>,
-    ret: Kind,
+    args: Box<[TypeData]>,
+    ret: Box<TypeData>,
 }
 
-impl Function {
-    /// builds a new function
-    #[allow(dead_code)]
-    pub fn new<R, I>(ret: R, args: I) -> Self
-    where
-        Kind: From<R>,
-        I: IntoIterator<Item = Kind>,
-    {
-        let args = args.into_iter().collect::<Vec<Kind>>().into_boxed_slice();
-        let ret = Kind::from(ret);
-        Self { args, ret }
+impl<'temp, 'input: 'temp> From<&'temp FunctionDec<'input>> for Function {
+    fn from(arg: &'temp FunctionDec) -> Function {
+        let args = arg
+            .args
+            .iter()
+            .map(|func_arg| TypeData::from(func_arg))
+            .collect::<Vec<TypeData>>()
+            .into_boxed_slice();
+        let ret = Box::new(TypeData::from(arg.ret.as_ref()));
+        Function { args, ret }
     }
 }
 
 implement_index! {
     Type: Function;
     Field: args;
-    Output: Kind;
+    Output: TypeData;
     Args: { u8, u16, u32, u64, usize };
 }
 
@@ -70,14 +74,14 @@ impl AsMut<Function> for Function {
 }
 
 /// accessor methods for functions
-pub trait FunctionTrait: AsRef<Function> + std::ops::Index<usize, Output = Kind> {
+pub trait FunctionTrait: AsRef<Function> + std::ops::Index<usize, Output = TypeData> {
     /// how many arguments are there
     fn args_len(&self) -> usize {
         self.as_ref().args.len()
     }
 
     /// fetches the functions return kind
-    fn get_return<'a>(&'a self) -> &'a Kind {
+    fn get_return<'a>(&'a self) -> &'a TypeData {
         &self.as_ref().ret
     }
 }
@@ -86,7 +90,7 @@ impl FunctionTrait for Function {}
 
 pub trait FunctionMutTrait: AsMut<Function> + FunctionTrait + std::ops::IndexMut<usize> {
     /// get return argument, but mutable
-    fn get_mut_return<'a>(&'a mut self) -> &'a mut Kind {
+    fn get_mut_return<'a>(&'a mut self) -> &'a mut TypeData {
         &mut self.as_mut().ret
     }
 }

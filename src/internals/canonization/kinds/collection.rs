@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 #[allow(unused_imports)]
 use crate::internals::canonization::kinds::primative::int::{
     Integer, IntegerMutTrait, IntegerTrait,
@@ -6,7 +8,7 @@ use crate::internals::canonization::kinds::primative::int::{
 use crate::internals::canonization::kinds::primative::{Prim, PrimativeMutTrait, PrimativeTrait};
 
 /// Collection of primatives
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct Collection {
     interior: Prim,
     size: Integer,

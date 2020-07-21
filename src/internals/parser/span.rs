@@ -242,6 +242,17 @@ pub trait Spanner<'input>: AsRef<Span<'input>> {
     fn get_id(&self) -> Id {
         self.as_ref().identifier
     }
+
+    /// pushes items into sub-structures. This is used for setting global
+    /// state when loading a serialized AST.
+    fn fields(&self) {
+        self.set_id();
+    }
+
+    /// handle global id side effects
+    fn set_id(&self) {
+        self.get_id().set_id();
+    }
 }
 
 #[test]

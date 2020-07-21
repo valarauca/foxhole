@@ -21,7 +21,20 @@ impl<'input> AsRef<Span<'input>> for Expression<'input> {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for Expression<'input> {}
+impl<'input> Spanner<'input> for Expression<'input> {
+    fn fields(&self) {
+        self.set_id();
+        match self.kind.as_ref() {
+            &Expr::Var(ref a) => a.fields(),
+            &Expr::Num(ref b) => b.fields(),
+            &Expr::Template(ref c) => c.fields(),
+            &Expr::Invoke(ref d) => d.fields(),
+            &Expr::Op(ref e) => e.fields(),
+            &Expr::Parens(ref f) => f.fields(),
+            &Expr::Cond(ref g) => g.fields(),
+        }
+    }
+}
 
 /// Expr stores the internal information about the expression.
 /// more or less, what the expression is and what it is doing
