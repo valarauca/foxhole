@@ -5,6 +5,7 @@ use super::Compositional;
 use super::Function;
 use super::Prim;
 use crate::internals::parser::ast::args::FunctionArg;
+use crate::internals::parser::ast::comparg::CompositionalFunction;
 use crate::internals::parser::ast::func::FunctionDec;
 use crate::internals::parser::ast::kind::Kind as AstKind;
 
@@ -75,6 +76,14 @@ impl From<AstKind> for TypeData {
         }
     }
 }
+impl<'a> From<&'a Option<AstKind>> for TypeData {
+    fn from(arg: &'a Option<AstKind>) -> Self {
+        match *arg {
+            Option::None => Self::None,
+            Option::Some(ast_kind) => TypeData::from(ast_kind),
+        }
+    }
+}
 
 impl<'temp> From<&'temp AstKind> for TypeData {
     fn from(arg: &'temp AstKind) -> Self {
@@ -100,6 +109,12 @@ impl<'temp> From<&'temp Box<Option<AstKind>>> for TypeData {
 impl<'temp, 'input> From<&'temp FunctionArg<'input>> for TypeData {
     fn from(arg: &'temp FunctionArg<'input>) -> Self {
         Self::from(arg.kind.as_ref())
+    }
+}
+
+impl From<&CompositionalFunction<'_>> for TypeData {
+    fn from(arg: &CompositionalFunction<'_>) -> Self {
+        Self::Comp(Compositional::from(arg))
     }
 }
 

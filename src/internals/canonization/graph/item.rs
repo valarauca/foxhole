@@ -1,5 +1,5 @@
 use crate::internals::canonization::kinds::workable::{TypeData, TypeDataTrait};
-use crate::internals::parser::ast::Representation;
+use crate::internals::parser::ast::{Representation,ReprTrait};
 use crate::internals::parser::span::{Span, Spanner};
 
 /// Item is a core structure used to represent the AST
@@ -15,11 +15,24 @@ impl<'temp, 'input: 'temp> Item<'temp, 'input> {
         Representation<'temp, 'input>: From<T>,
     {
         let data = Representation::from(arg);
-        let type_info = TypeData::default();
-        // TODO recover type info
+        let type_info = match &data {
+            &Representation::Assign(assign) => TypeData::from(&assign.kind),
+            &Representation::FunctionArg(arg) => TypeData::from(arg),
+            &Representation::FunctionDec(dec) => TypeData::from(dec),
+            _ => TypeData::default(),
+        };
         Self { data, type_info }
     }
 }
+
+impl<'temp, 'input: 'temp> AsRef<Representation<'temp,'input>> for Item<'temp, 'input> {
+    #[inline(always)]
+    fn as_ref<'a>(&'a self) -> &'a Representation<'temp,'input> {
+        self.data.as_ref()
+    }
+}
+
+impl<'temp,'input:'temp> ReprTrait<'temp,'input> for Item<'temp,'input> { }
 
 impl<'temp, 'input: 'temp> AsRef<TypeData> for Item<'temp, 'input> {
     #[inline(always)]

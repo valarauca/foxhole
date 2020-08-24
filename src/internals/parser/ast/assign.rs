@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::{GetInternalExpression, InternalExpression};
+
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::ast::kind::Kind;
@@ -15,6 +17,12 @@ pub struct Assign<'input> {
     pub kind: Box<Option<Kind>>,
     #[serde(borrow)]
     pub span: Box<Span<'input>>,
+}
+impl<'input> GetInternalExpression<'input> for Assign<'input> {
+    /// returns the defining expression
+    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a, 'input>> {
+        Some(InternalExpression::Single(self.expr.as_ref()))
+    }
 }
 impl<'input> AsRef<Span<'input>> for Assign<'input> {
     fn as_ref(&self) -> &Span<'input> {

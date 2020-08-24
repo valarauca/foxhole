@@ -82,6 +82,25 @@ use crate::internals::parser::ast::statement::{State, Statement};
 use crate::internals::parser::ast::template::Template;
 use crate::internals::parser::span::{Span, Spanner};
 
+/// For representing internal arguments
+pub enum InternalExpression<'temp, 'input: 'temp> {
+    Single(&'temp Expression<'input>),
+    Op {
+        left: &'temp Expression<'input>,
+        right: &'temp Expression<'input>,
+    },
+    Conditional {
+        cond: &'temp Expression<'input>,
+        true_case: &'temp Expression<'input>,
+        false_case: &'temp Expression<'input>,
+    },
+}
+
+/// GetInternalExpression is a useful system for transversing the AST
+pub trait GetInternalExpression<'input> {
+    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a, 'input>>;
+}
+
 /// Representation is all possible values of
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Representation<'temp, 'input: 'temp> {
@@ -97,6 +116,13 @@ pub enum Representation<'temp, 'input: 'temp> {
     FunctionDec(&'temp FunctionDec<'input>),
     Invoke(&'temp Invoke<'input>),
     Operation(&'temp Operation<'input>),
+}
+
+impl<'temp, 'input: 'temp> AsRef<Representation<'temp, 'input>> for Representation<'temp, 'input> {
+    #[inline(always)]
+    fn as_ref<'a>(&'a self) -> &'a Self {
+        self
+    }
 }
 
 impl<'temp, 'input: 'temp> From<&'temp Statement<'input>> for Representation<'temp, 'input> {
@@ -195,3 +221,154 @@ impl<'temp, 'input: 'temp> AsRef<Span<'input>> for Representation<'temp, 'input>
 }
 
 impl<'temp, 'input: 'temp> Spanner<'input> for Representation<'temp, 'input> {}
+
+/// Getter and is methods on Representation
+pub trait ReprTrait<'temp, 'input: 'temp>: AsRef<Representation<'temp, 'input>> {
+    fn is_statement(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Statement(_) => true,
+            _ => false,
+        }
+    }
+    fn is_ident(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Ident(_) => true,
+            _ => false,
+        }
+    }
+    fn is_assign(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Assign(_) => true,
+            _ => false,
+        }
+    }
+    fn is_function_arg(&self) -> bool {
+        match self.as_ref() {
+            &Representation::FunctionArg(_) => true,
+            _ => false,
+        }
+    }
+    fn is_template(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Template(_) => true,
+            _ => false,
+        }
+    }
+    fn is_compositional_function_arg(&self) -> bool {
+        match self.as_ref() {
+            &Representation::CompositionalFunctionArg(_) => true,
+            _ => false,
+        }
+    }
+    fn is_compositional_function(&self) -> bool {
+        match self.as_ref() {
+            &Representation::CompositionalFunction(_) => true,
+            _ => false,
+        }
+    }
+    fn is_conditional(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Conditional(_) => true,
+            _ => false,
+        }
+    }
+    fn is_expression(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Expression(_) => true,
+            _ => false,
+        }
+    }
+    fn is_function_dec(&self) -> bool {
+        match self.as_ref() {
+            &Representation::FunctionDec(_) => true,
+            _ => false,
+        }
+    }
+    fn is_invoke(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Invoke(_) => true,
+            _ => false,
+        }
+    }
+    fn is_operation(&self) -> bool {
+        match self.as_ref() {
+            &Representation::Operation(_) => true,
+            _ => false,
+        }
+    }
+
+    fn get_statement(&self) -> Option<&'temp Statement<'input>> {
+        match self.as_ref() {
+            &Representation::Statement(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_ident(&self) -> Option<&'temp Ident<'input>> {
+        match self.as_ref() {
+            &Representation::Ident(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_sssign(&self) -> Option<&'temp Assign<'input>> {
+        match self.as_ref() {
+            &Representation::Assign(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_function_arg(&self) -> Option<&'temp FunctionArg<'input>> {
+        match self.as_ref() {
+            &Representation::FunctionArg(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_template(&self) -> Option<&'temp Template<'input>> {
+        match self.as_ref() {
+            &Representation::Template(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_compositional_function_arg(&self) -> Option<&'temp CompositionalFunctionArg<'input>> {
+        match self.as_ref() {
+            &Representation::CompositionalFunctionArg(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_compositional_function(&self) -> Option<&'temp CompositionalFunction<'input>> {
+        match self.as_ref() {
+            &Representation::CompositionalFunction(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_conditional(&self) -> Option<&'temp Conditional<'input>> {
+        match self.as_ref() {
+            &Representation::Conditional(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_expression(&self) -> Option<&'temp Expression<'input>> {
+        match self.as_ref() {
+            &Representation::Expression(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_function_dec(&self) -> Option<&'temp FunctionDec<'input>> {
+        match self.as_ref() {
+            &Representation::FunctionDec(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_invoke(&self) -> Option<&'temp Invoke<'input>> {
+        match self.as_ref() {
+            &Representation::Invoke(arg) => Some(arg),
+            _ => None,
+        }
+    }
+    fn get_operation(&self) -> Option<&'temp Operation<'input>> {
+        match self.as_ref() {
+            &Representation::Operation(arg) => Some(arg),
+            _ => None,
+        }
+    }
+}
+
+impl<'temp, 'input: 'temp> ReprTrait<'temp, 'input> for Representation<'temp, 'input> {}

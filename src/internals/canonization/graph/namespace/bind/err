@@ -1,0 +1,92 @@
+   Compiling mathhammer v0.0.1 (/home/valarauca/Documents/rust_project/foxhole)
+error[E0599]: no variant or associated item named `Decalaration` found for enum `internals::canonization::graph::namespace::bind::Variable<'_, '_>` in the current scope
+  --> src/internals/canonization/graph/namespace/bind/mod.rs:41:24
+   |
+20 | pub enum Variable<'temp,'input:'temp> {
+   | ------------------------------------- variant or associated item `Decalaration` not found here
+...
+41 |             &Variable::Decalaration(ref arg) => arg.get_name(),
+   |                        ^^^^^^^^^^^^
+   |                        |
+   |                        variant or associated item not found in `internals::canonization::graph::namespace::bind::Variable<'_, '_>`
+   |                        help: there is a variant with a similar name: `Declaration`
+
+error[E0599]: no variant or associated item named `Decalaration` found for enum `internals::canonization::graph::namespace::bind::Variable<'_, '_>` in the current scope
+  --> src/internals/canonization/graph/namespace/bind/mod.rs:86:24
+   |
+20 | pub enum Variable<'temp,'input:'temp> {
+   | ------------------------------------- variant or associated item `Decalaration` not found here
+...
+86 |             &Variable::Decalaration(ref arg) => arg.as_ref(),
+   |                        ^^^^^^^^^^^^
+   |                        |
+   |                        variant or associated item not found in `internals::canonization::graph::namespace::bind::Variable<'_, '_>`
+   |                        help: there is a variant with a similar name: `Declaration`
+
+error[E0599]: no variant or associated item named `Decalaration` found for enum `internals::canonization::graph::namespace::bind::Variable<'_, '_>` in the current scope
+  --> src/internals/canonization/graph/namespace/bind/mod.rs:95:28
+   |
+20 | pub enum Variable<'temp,'input:'temp> {
+   | ------------------------------------- variant or associated item `Decalaration` not found here
+...
+95 |             &mut Variable::Decalaration(ref mut arg) => arg.as_mut(),
+   |                            ^^^^^^^^^^^^
+   |                            |
+   |                            variant or associated item not found in `internals::canonization::graph::namespace::bind::Variable<'_, '_>`
+   |                            help: there is a variant with a similar name: `Declaration`
+
+error[E0599]: no variant or associated item named `Decalaration` found for enum `internals::canonization::graph::namespace::bind::Variable<'_, '_>` in the current scope
+   --> src/internals/canonization/graph/namespace/bind/mod.rs:111:24
+    |
+20  | pub enum Variable<'temp,'input:'temp> {
+    | ------------------------------------- variant or associated item `Decalaration` not found here
+...
+111 |             &Variable::Decalaration(ref arg) => arg.as_ref(),
+    |                        ^^^^^^^^^^^^
+    |                        |
+    |                        variant or associated item not found in `internals::canonization::graph::namespace::bind::Variable<'_, '_>`
+    |                        help: there is a variant with a similar name: `Declaration`
+
+error[E0599]: no method named `get_token` found for reference `&internals::parser::ast::ident::Ident<'_>` in the current scope
+  --> src/internals/canonization/graph/namespace/bind/args.rs:15:37
+   |
+15 |         self.internal.name.as_ref().get_token()
+   |                                     ^^^^^^^^^ method not found in `&internals::parser::ast::ident::Ident<'_>`
+
+error[E0308]: mismatched types
+  --> src/internals/canonization/graph/namespace/bind/args.rs:23:23
+   |
+23 |             internal: arg,
+   |                       ^^^ lifetime mismatch
+   |
+   = note: expected reference `&'temp internals::parser::ast::args::FunctionArg<'input>`
+              found reference `&'temp internals::parser::ast::args::FunctionArg<'_>`
+note: the anonymous lifetime #1 defined on the method body at 20:5...
+  --> src/internals/canonization/graph/namespace/bind/args.rs:20:5
+   |
+20 | /     fn from(arg: &'temp AstFunctionArg) -> Self {
+21 | |         Self {
+22 | |             kind: TypeData::from(arg.kind.as_ref()),
+23 | |             internal: arg,
+24 | |         }
+25 | |     }
+   | |_____^
+note: ...does not necessarily outlive the lifetime `'input` as defined on the impl at 19:12
+  --> src/internals/canonization/graph/namespace/bind/args.rs:19:12
+   |
+19 | impl<'temp,'input:'temp> From<&'temp AstFunctionArg<'input>> for FunctionArg<'temp,'input> {
+   |            ^^^^^^
+
+error[E0599]: no method named `get_token` found for struct `std::boxed::Box<internals::parser::ast::ident::Ident<'input>>` in the current scope
+  --> src/internals/canonization/graph/namespace/bind/assign.rs:16:28
+   |
+16 |         self.internal.name.get_token()
+   |                            ^^^^^^^^^ method not found in `std::boxed::Box<internals::parser::ast::ident::Ident<'input>>`
+
+error: aborting due to 7 previous errors
+
+Some errors have detailed explanations: E0308, E0599.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `mathhammer`.
+
+To learn more, run the command again with --verbose.

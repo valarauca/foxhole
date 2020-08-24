@@ -39,16 +39,29 @@ pub struct Function {
     ret: Box<TypeData>,
 }
 
-impl<'temp, 'input: 'temp> From<&'temp FunctionDec<'input>> for Function {
-    fn from(arg: &'temp FunctionDec) -> Function {
-        let args = arg
-            .args
-            .iter()
-            .map(|func_arg| TypeData::from(func_arg))
+impl Function {
+    /// allows for building new functions
+    /// required for compositional functions
+    #[inline(always)]
+    pub fn new<I, T, A>(args: I, ret: A) -> Self
+    where
+        TypeData: From<T>,
+        I: IntoIterator<Item = T>,
+        TypeData: From<A>,
+    {
+        let args = args
+            .into_iter()
+            .map(<TypeData as From<T>>::from)
             .collect::<Vec<TypeData>>()
             .into_boxed_slice();
-        let ret = Box::new(TypeData::from(arg.ret.as_ref()));
-        Function { args, ret }
+        let ret = Box::new(TypeData::from(ret));
+        Self { args, ret }
+    }
+}
+
+impl<'temp, 'input: 'temp> From<&'temp FunctionDec<'input>> for Function {
+    fn from(arg: &'temp FunctionDec) -> Function {
+        Function::new(&arg.args, arg.ret.as_ref())
     }
 }
 

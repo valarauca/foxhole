@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::{GetInternalExpression, InternalExpression};
+
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::span::{Span, Spanner};
 
@@ -13,6 +15,15 @@ pub struct Operation<'input> {
     pub right: Box<Expression<'input>>,
     #[serde(borrow)]
     pub span: Box<Span<'input>>,
+}
+
+impl<'input> GetInternalExpression<'input> for Operation<'input> {
+    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a, 'input>> {
+        Some(InternalExpression::Op {
+            left: self.left.as_ref(),
+            right: self.right.as_ref(),
+        })
+    }
 }
 
 impl<'input> AsRef<Span<'input>> for Operation<'input> {
