@@ -6,18 +6,6 @@ use crate::internals::parser::ast::op::Op;
 use crate::internals::parser::ast::template::Template;
 use crate::internals::parser::span::{Span, Spanner};
 
-/*
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum CompositionalArg<'input> {
-    #[serde(borrow)]
-    Primative(Box<Span<'input>>),
-    #[serde(borrow)]
-    Template(Box<Template<'input>>),
-    #[serde(borrow)]
-    Func(Box<Ident<'input>>),
-    Op(Box<Op>),
-}
-*/
 stuff! {
     Name: CompositionalArg;
     Trait: CompositionalArgTrait;

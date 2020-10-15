@@ -36,6 +36,7 @@ impl<'input> Spanner<'input> for Expression<'input> {
         }
     }
 }
+impl<'input, 'temp> Spanner<'input> for &'temp Expression<'input> {}
 
 impl<'input> GetInternalExpression<'input> for Expression<'input> {
     fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a, 'input>> {

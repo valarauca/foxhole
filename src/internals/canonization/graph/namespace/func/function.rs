@@ -1,11 +1,15 @@
-use crate::internals::canonization::graph::namespace::GetName;
-use crate::internals::canonization::kinds::workable::{TypeData, TypeDataTrait};
-use crate::internals::parser::{
-    ast::{
-        args::FunctionArg as AstFunctionArg, func::FunctionDec as AstFunctionDec,
-        statement::Statement as AstStatement,
+use crate::internals::{
+    canonization::{
+        graph::namespace::GetName,
+        kinds::workable::{TypeData, TypeDataTrait},
     },
-    span::{Span, Spanner},
+    parser::{
+        ast::{
+            args::FunctionArg as AstFunctionArg, func::FunctionDec as AstFunctionDec,
+            statement::Statement as AstStatement,
+        },
+        span::{Span, Spanner},
+    },
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

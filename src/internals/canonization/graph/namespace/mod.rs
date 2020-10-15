@@ -1,8 +1,19 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
-use crate::internals::canonization::kinds::workable::{TypeData, TypeDataTrait};
+/*
+ * Type Inference stuff
+ *
+ */
+use crate::internals::canonization::kinds::{
+    collection::CollectionTrait,
+    primative::{Prim, PrimativeTrait},
+    workable::{TypeData, TypeDataTrait},
+};
+
 use crate::internals::parser::ast::expr::{Expr as AstExpr, Expression as AstExpression};
 use crate::internals::parser::ast::statement::{State as AstState, Statement as AstStatement};
+use crate::internals::parser::ast::{GetInternalExpression, InternalExpression};
 use crate::internals::parser::span::{Span, Spanner};
 
 mod bind;
@@ -53,11 +64,81 @@ impl<'temp, 'input: 'temp> Namespace<'temp, 'input> {
      *
      */
 
-    fn validate_expression<E>(&self, expr: &'temp AstExpression<'input>) -> Result<(), E>
+    // attempts to infer the type information of an expression
+    fn get_type<E>(&self, expr: &'temp AstExpression<'input>) -> Result<TypeData, E>
     where
         E: NamespaceError<'temp, 'input>,
     {
-        Ok(())
+        match expr.get_expr() {
+            Option::Some(InternalExpression::Single(expr)) => self.get_type(expr),
+            Option::Some(InternalExpression::Op {
+                left: ref l,
+                right: ref r,
+            }) => panic!("TODO"),
+            Option::Some(InternalExpression::Conditional {
+                cond: ref c,
+                true_case: ref t,
+                false_case: ref f,
+            }) => {
+                // validate a conditional
+                if !self
+                    .get_type(c)?
+                    .get_prim()
+                    .map(|x| x.is_bool())
+                    .unwrap_or_default()
+                {
+                    // condition part of `if/else` is not a boolean
+                    return Err(E::condition_not_bool(expr));
+                }
+
+                // ensure both arms return the same type.
+                let true_type = self.get_type(t)?;
+                let false_type = self.get_type(f)?;
+
+                // check their interior types
+                let result = Option::None
+                    .into_iter()
+                    .chain(
+                        true_type
+                            .get_prim()
+                            .into_iter()
+                            .zip(false_type.get_prim())
+                            .map(|(t, f)| {
+                                ((t.is_int() && f.is_int()) || (t.is_bool() && f.is_bool()))
+                            }),
+                    )
+                    .chain(
+                        true_type
+                            .get_coll()
+                            .into_iter()
+                            .zip(false_type.get_coll())
+                            .map(|(t, f)| {
+                                ((t.contains_int() && f.contains_int())
+                                    || (t.contains_bool() && f.contains_bool()))
+                            }),
+                    )
+                    .next()
+                    .unwrap_or_default();
+                if !result {
+                    return Err(E::condition_not_match(expr, t, &true_type, f, &false_type));
+                }
+
+                // we validated the types are the same, so just return this
+                Ok(true_type)
+            }
+            Option::None => match expr.kind.as_ref() {
+                &AstExpr::Var(ref name) => match self.lookup_type(name.get_span()) {
+                    Option::Some(t) => Ok(t.clone()),
+                    Option::None => Err(E::var_not_found(expr)),
+                },
+                &AstExpr::Num(ref num) => {
+                    let value = i64::from_str(num.get_span()).unwrap();
+                    Ok(TypeData::from(Prim::new_int_constant(value)))
+                }
+                &AstExpr::Template(_) => panic!("TODO"),
+                _ => panic!("should not occur, these types should be transformed"),
+            },
+        }
     }
 
     /// looks up a type in a namespace from a valid identifier

@@ -1,9 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::Collection;
-use super::Compositional;
-use super::Function;
-use super::Prim;
+use super::{Collection, CollectionTrait, Compositional, Function, Prim};
 use crate::internals::parser::ast::args::FunctionArg;
 use crate::internals::parser::ast::comparg::CompositionalFunction;
 use crate::internals::parser::ast::func::FunctionDec;
@@ -137,6 +134,32 @@ pub trait TypeDataTrait: AsRef<TypeData> + AsMut<TypeData> {
             &TypeData::None => true,
             _ => false,
         }
+    }
+
+    /// asserts:
+    ///
+    /// 1. `self` is a primative, and `other` is a collection of the same primative.
+    /// 2. `self` is a collection of the same primative as `other`.
+    fn is_coll_of<T: TypeDataTrait>(&self, other: &T) -> bool {
+        Option::None
+            .into_iter()
+            .chain(
+                self.get_coll()
+                    .into_iter()
+                    .map(|coll| coll.get_interior())
+                    .zip(other.get_prim())
+                    .map(|(s, o)| s == o),
+            )
+            .chain(
+                other
+                    .get_coll()
+                    .into_iter()
+                    .map(|coll| coll.get_interior())
+                    .zip(self.get_prim())
+                    .map(|(s, o)| s == o),
+            )
+            .next()
+            .unwrap_or_else(|| false)
     }
 
     fn is_coll(&self) -> bool {

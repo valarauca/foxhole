@@ -5,7 +5,7 @@ use crate::internals::parser::span::{Span, Spanner};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CompFunction<'temp, 'input: 'temp> {
-    internal: &'temp AstCompositionalFunction<'input>,
+    pub internal: &'temp AstCompositionalFunction<'input>,
     kind: TypeData,
 }
 
