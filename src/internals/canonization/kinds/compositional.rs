@@ -43,7 +43,7 @@ pub trait CompositionalTrait: AsRef<Compositional> {
     }
 }
 
-impl From<&CompositionalFunction<'_>> for Compositional {
+impl From<&CompositionalFunction> for Compositional {
     /// NOTE:
     ///       This does not verify that the internal function
     ///       is of the correct type.
@@ -53,7 +53,7 @@ impl From<&CompositionalFunction<'_>> for Compositional {
     ///       This doesn't like collections
     /// TODO:
     ///       Type Checking must be performed after namespace validation.
-    fn from(arg: &CompositionalFunction<'_>) -> Self {
+    fn from(arg: &CompositionalFunction) -> Self {
         let (ret, coll) = match TypeData::from(arg.ret.as_ref()) {
             TypeData::Prim(x) => {
                 let prim = TypeData::Prim(x.clone());

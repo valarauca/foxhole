@@ -7,13 +7,12 @@ use crate::internals::parser::span::{Span, Spanner};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Operation {
-    
     pub left: Box<Expression>,
-    
+
     pub op: Op,
-    
+
     pub right: Box<Expression>,
-    
+
     pub span: Box<Span>,
 }
 

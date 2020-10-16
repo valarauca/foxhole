@@ -8,11 +8,10 @@ use serde::{Deserialize, Serialize};
 /// Template is a variable who's value is given at run time.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Template {
-    
     pub span: Box<Span>,
-    
+
     pub ident: Box<Ident>,
-    
+
     pub behavior: Option<TemplateBehavior>,
 }
 
@@ -64,11 +63,9 @@ impl Spanner for Template {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum TemplateBehavior {
     /// Fallback will just assign the value to what ever is contained in the fallback
-    
     Fallback(TemplateFallback),
 
     /// Assign will modify the global environment to set this value.
-    
     Assign(TemplateFallback),
 }
 
@@ -94,9 +91,8 @@ impl TemplateBehavior {
 /// circumstances as not all templates have fallback behavior.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum TemplateFallback {
-    
     Num(Box<Span>),
-    
+
     Template(Box<Template>),
 }
 

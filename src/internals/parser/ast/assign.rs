@@ -10,12 +10,11 @@ use crate::internals::parser::span::{Span, Spanner};
 /// Assign represents an assignment
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Assign {
-    
     pub name: Box<Ident>,
-    
+
     pub expr: Box<Expression>,
     pub kind: Box<Option<Kind>>,
-    
+
     pub span: Box<Span>,
 }
 impl GetInternalExpression for Assign {

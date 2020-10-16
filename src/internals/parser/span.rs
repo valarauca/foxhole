@@ -1,5 +1,5 @@
+use std::borrow::ToOwned;
 use std::hash::Hash;
-use std::borrow::{ToOwned};
 
 use serde::{Deserialize, Serialize};
 
@@ -31,7 +31,7 @@ pub struct Span {
     // the parsed text itself
     token: String,
     // the line(s) (if it spans multiple lines) that contain this value.
-    surrounding_lines: String
+    surrounding_lines: String,
 }
 
 impl PartialEq for Span {

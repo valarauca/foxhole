@@ -59,7 +59,7 @@ impl Function {
     }
 }
 
-impl<'temp, 'input: 'temp> From<&'temp FunctionDec<'input>> for Function {
+impl<'temp> From<&'temp FunctionDec> for Function {
     fn from(arg: &'temp FunctionDec) -> Function {
         Function::new(&arg.args, arg.ret.as_ref())
     }

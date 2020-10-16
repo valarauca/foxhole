@@ -109,8 +109,8 @@ impl<'temp> From<&'temp FunctionArg> for TypeData {
     }
 }
 
-impl From<&CompositionalFunction<'_>> for TypeData {
-    fn from(arg: &CompositionalFunction<'_>) -> Self {
+impl From<&CompositionalFunction> for TypeData {
+    fn from(arg: &CompositionalFunction) -> Self {
         Self::Comp(Compositional::from(arg))
     }
 }

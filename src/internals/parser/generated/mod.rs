@@ -18,7 +18,7 @@ pub use self::parser::parser_y::{parse, token_epp};
 #[allow(dead_code)]
 pub fn parse_code<E>(source: &str) -> Result<Vec<Statement>, Vec<E>>
 where
-    E: SyntaxError
+    E: SyntaxError,
 {
     let def: LRNonStreamingLexerDef<u32> = lexerdef();
     {

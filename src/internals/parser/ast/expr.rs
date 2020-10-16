@@ -12,9 +12,8 @@ use crate::internals::parser::span::{Span, Spanner};
 /// random bits saying `y + 2` and what not.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Expression {
-    
     pub kind: Box<Expr>,
-    
+
     pub span: Box<Span>,
 }
 impl AsRef<Span> for Expression {
@@ -52,19 +51,18 @@ impl GetInternalExpression for Expression {
 /// more or less, what the expression is and what it is doing
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Expr {
-    
     Var(Box<Ident>),
-    
+
     Num(Box<Span>),
-    
+
     Template(Box<Template>),
-    
+
     Invoke(Box<Invoke>),
-    
+
     Op(Box<Operation>),
-    
+
     Parens(Box<Expression>),
-    
+
     Cond(Box<Conditional>),
 }
 macro_rules! expr_from {

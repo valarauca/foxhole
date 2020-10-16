@@ -7,11 +7,10 @@ use crate::internals::parser::span::{Span, Spanner};
 /// Invoking a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Invoke {
-    
     pub name: Box<Ident>,
-    
+
     pub args: Box<[Expression]>,
-    
+
     pub span: Box<Span>,
 }
 impl AsRef<Span> for Invoke {

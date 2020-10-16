@@ -20,9 +20,8 @@ stuff! {
 /// Argument to a compositional function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct CompositionalFunctionArg {
-    
     pub arg: CompositionalArg,
-    
+
     pub span: Box<Span>,
 }
 impl CompositionalFunctionArg {
@@ -59,16 +58,15 @@ impl Spanner for CompositionalFunctionArg {
 /// Declaring a compositional function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct CompositionalFunction {
-    
     pub name: Box<Ident>,
-    
+
     pub null_arg: Box<CompositionalFunctionArg>,
-    
+
     pub single_arg: Box<CompositionalFunctionArg>,
-    
+
     pub collection_arg: Box<CompositionalFunctionArg>,
     pub ret: Box<Kind>,
-    
+
     pub span: Box<Span>,
 }
 impl AsRef<Span> for CompositionalFunction {

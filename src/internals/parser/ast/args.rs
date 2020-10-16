@@ -7,10 +7,9 @@ use crate::internals::parser::span::{Span, Spanner};
 /// Argument to a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct FunctionArg {
-    
     pub name: Box<Ident>,
     pub kind: Box<Kind>,
-    
+
     pub span: Box<Span>,
 }
 impl FunctionArg {

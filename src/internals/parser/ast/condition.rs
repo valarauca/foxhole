@@ -8,13 +8,12 @@ use crate::internals::parser::span::{Span, Spanner};
 /// Conditionals manage things like `if else`
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Conditional {
-    
     pub condition: Box<Expression>,
-    
+
     pub true_case: Box<Expression>,
-    
+
     pub false_case: Box<Expression>,
-    
+
     pub span: Box<Span>,
 }
 impl GetInternalExpression for Conditional {

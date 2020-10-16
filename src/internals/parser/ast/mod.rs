@@ -154,17 +154,13 @@ impl<'temp> From<&'temp Template> for Representation<'temp> {
     }
 }
 
-impl<'temp> From<&'temp CompositionalFunctionArg>
-    for Representation<'temp>
-{
+impl<'temp> From<&'temp CompositionalFunctionArg> for Representation<'temp> {
     fn from(arg: &'temp CompositionalFunctionArg) -> Self {
         Self::CompositionalFunctionArg(arg)
     }
 }
 
-impl<'temp> From<&'temp CompositionalFunction>
-    for Representation<'temp>
-{
+impl<'temp> From<&'temp CompositionalFunction> for Representation<'temp> {
     fn from(arg: &'temp CompositionalFunction) -> Self {
         Self::CompositionalFunction(arg)
     }

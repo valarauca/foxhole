@@ -9,13 +9,12 @@ use crate::internals::parser::span::{Span, Spanner};
 /// Declaring a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct FunctionDec {
-    
     pub name: Box<Ident>,
-    
+
     pub span: Box<Span>,
-    
+
     pub args: Vec<FunctionArg>,
-    
+
     pub body: Vec<Statement>,
     pub ret: Box<Kind>,
 }
