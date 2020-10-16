@@ -103,8 +103,8 @@ impl<'temp> From<&'temp Box<Option<AstKind>>> for TypeData {
     }
 }
 
-impl<'temp, 'input> From<&'temp FunctionArg<'input>> for TypeData {
-    fn from(arg: &'temp FunctionArg<'input>) -> Self {
+impl<'temp> From<&'temp FunctionArg> for TypeData {
+    fn from(arg: &'temp FunctionArg) -> Self {
         Self::from(arg.kind.as_ref())
     }
 }
@@ -115,14 +115,14 @@ impl From<&CompositionalFunction<'_>> for TypeData {
     }
 }
 
-impl From<&FunctionDec<'_>> for TypeData {
-    fn from(arg: &FunctionDec<'_>) -> Self {
+impl From<&FunctionDec> for TypeData {
+    fn from(arg: &FunctionDec) -> Self {
         Self::Func(Function::from(arg))
     }
 }
 
-impl<'temp, 'input: 'temp> From<&'temp Box<FunctionArg<'input>>> for TypeData {
-    fn from(arg: &'temp Box<FunctionArg<'input>>) -> Self {
+impl<'temp> From<&'temp Box<FunctionArg>> for TypeData {
+    fn from(arg: &'temp Box<FunctionArg>) -> Self {
         Self::from(arg.kind.as_ref())
     }
 }

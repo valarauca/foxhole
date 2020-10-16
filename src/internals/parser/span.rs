@@ -1,4 +1,5 @@
 use std::hash::Hash;
+use std::borrow::{ToOwned};
 
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +13,7 @@ use super::Id;
 
 /// Span contains information about where some text lies within the pre-parse structure
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Span<'input> {
+pub struct Span {
     // the source code line the span starts on
     start_line: u32,
     // the source code line the span ends on
@@ -28,33 +29,31 @@ pub struct Span<'input> {
     // identifier is used to uniquely id this element.
     identifier: Id,
     // the parsed text itself
-    #[serde(borrow)]
-    token: &'input str,
+    token: String,
     // the line(s) (if it spans multiple lines) that contain this value.
-    #[serde(borrow)]
-    surrounding_lines: &'input str,
+    surrounding_lines: String
 }
 
-impl<'input> PartialEq for Span<'input> {
+impl PartialEq for Span {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         self.identifier.eq(&other.identifier)
     }
 }
-impl<'input> Eq for Span<'input> {}
-impl<'input> PartialOrd for Span<'input> {
+impl Eq for Span {}
+impl PartialOrd for Span {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.identifier.partial_cmp(&other.identifier)
     }
 }
-impl<'input> Ord for Span<'input> {
+impl Ord for Span {
     #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.identifier.cmp(&other.identifier)
     }
 }
-impl<'input> std::hash::Hash for Span<'input> {
+impl std::hash::Hash for Span {
     #[inline]
     fn hash<H>(&self, hasher: &mut H)
     where
@@ -64,15 +63,15 @@ impl<'input> std::hash::Hash for Span<'input> {
     }
 }
 
-impl<'input> Span<'input> {
+impl Span {
     /// Build a Span.
     ///
     /// Ensure `s` and `span` are never both `None`. As this will trigger a panic.
-    pub(in crate::internals::parser) fn new<'a, U, G, S, L>(
+    pub(in crate::internals::parser) fn new<'a, 'input: 'a, U, G, S, L>(
         l: &'a L,
         s: G,
         span: S,
-    ) -> Result<Span<'input>, lrpar::Lexeme<U>>
+    ) -> Result<Span, lrpar::Lexeme<U>>
     where
         L: NonStreamingLexer<'input, U> + Lexer<U> + ?Sized,
         U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
@@ -90,8 +89,8 @@ impl<'input> Span<'input> {
                 panic!("Span::new() invoked without a Lexeme or Span");
             }
         };
-        let token = l.span_str(span.clone());
-        let surrounding_lines = l.span_lines_str(span.clone());
+        let token = l.span_str(span.clone()).to_owned();
+        let surrounding_lines = l.span_lines_str(span.clone()).to_owned();
         let ((start_line, start_column), (end_line, end_column)) = l.line_col(span.clone());
         let start_byte = span.start();
         let end_byte = span.end();
@@ -111,7 +110,7 @@ impl<'input> Span<'input> {
 
     /// creates a new span, but will not panic
     #[allow(dead_code)]
-    pub(in crate::internals::parser) fn new_panic<'a, 'b, U, L, T>(l: &'a L, arg: T) -> Span<'input>
+    pub(in crate::internals::parser) fn new_panic<'input, 'a, 'b, U, L, T>(l: &'a L, arg: T) -> Span
     where
         'a: 'b,
         'input: 'a,
@@ -129,10 +128,10 @@ impl<'input> Span<'input> {
         }
     }
 
-    pub(in crate::internals::parser) fn into<'a, 'b, U, S, L>(
+    pub(in crate::internals::parser) fn into<'input, 'a, 'b, U, S, L>(
         l: &'a L,
         span: S,
-    ) -> impl 'b + FnOnce() -> Result<Span<'input>, lrpar::Lexeme<U>>
+    ) -> impl 'b + FnOnce() -> Result<Span, lrpar::Lexeme<U>>
     where
         'a: 'b,
         'input: 'a,
@@ -143,13 +142,13 @@ impl<'input> Span<'input> {
         move || Span::new(l, None, span)
     }
 }
-impl<'input> AsRef<Span<'input>> for Span<'input> {
+impl AsRef<Span> for Span {
     #[inline(always)]
-    fn as_ref(&self) -> &Span<'input> {
+    fn as_ref(&self) -> &Span {
         self
     }
 }
-impl<'input> Spanner<'input> for Span<'input> {}
+impl Spanner for Span {}
 
 /// SpanBuilder is used to handle the different things a "span" can be created from
 pub enum SpanBuilder<U>
@@ -196,7 +195,7 @@ where
 ///
 /// It exists to simply the generation error messages as well as
 /// getting source location more imply.
-pub trait Spanner<'input>: AsRef<Span<'input>> {
+pub trait Spanner: AsRef<Span> {
     /// returns the byte index of the first byte of this span within the source file.
     fn get_start_byte_index(&self) -> usize {
         self.as_ref().start_byte as usize
@@ -228,14 +227,14 @@ pub trait Spanner<'input>: AsRef<Span<'input>> {
     }
 
     /// returns the underlying `str` representation of the input.
-    fn get_span(&self) -> &'input str {
-        self.as_ref().token
+    fn get_span<'a>(&'a self) -> &'a str {
+        &self.as_ref().token
     }
 
     /// returns the raw line(s) (multiple if "this span" crosses multiple lines) which "this span"
     /// is contained within.
-    fn get_surrounding_lines(&self) -> &'input str {
-        self.as_ref().surrounding_lines
+    fn get_surrounding_lines<'a>(&'a self) -> &'a str {
+        &self.as_ref().surrounding_lines
     }
 
     /// returns the unique id for this span
@@ -253,10 +252,4 @@ pub trait Spanner<'input>: AsRef<Span<'input>> {
     fn set_id(&self) {
         self.get_id().set_id();
     }
-}
-
-#[test]
-fn span_struct_is_a_cache_line() {
-    use std::mem::size_of;
-    assert_eq!(size_of::<Span>(), 64);
 }

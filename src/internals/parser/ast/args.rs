@@ -6,22 +6,22 @@ use crate::internals::parser::span::{Span, Spanner};
 
 /// Argument to a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct FunctionArg<'input> {
-    #[serde(borrow)]
-    pub name: Box<Ident<'input>>,
+pub struct FunctionArg {
+    
+    pub name: Box<Ident>,
     pub kind: Box<Kind>,
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
+    
+    pub span: Box<Span>,
 }
-impl<'input> FunctionArg<'input> {
+impl FunctionArg {
     #[inline(always)]
     pub(in crate::internals::parser) fn new<F>(
-        name: Ident<'input>,
+        name: Ident,
         kind: Kind,
         span: F,
     ) -> Result<Self, lrpar::Lexeme<u32>>
     where
-        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+        F: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
     {
         let span = Box::new(span()?);
         let name = Box::new(name);
@@ -29,12 +29,12 @@ impl<'input> FunctionArg<'input> {
         Ok(Self { name, kind, span })
     }
 }
-impl<'input> AsRef<Span<'input>> for FunctionArg<'input> {
-    fn as_ref(&self) -> &Span<'input> {
+impl AsRef<Span> for FunctionArg {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for FunctionArg<'input> {
+impl Spanner for FunctionArg {
     fn fields(&self) {
         self.set_id();
         self.name.fields();

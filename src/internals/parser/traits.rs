@@ -10,16 +10,16 @@ use crate::internals::parser::span::Span;
 /// syntax errors are handled. The idea is if we need to change/adapt error
 /// reporting in the future, the new "reporter" only needs to implement this
 /// trait.
-pub trait SyntaxError<'input>: Sized + Display {
+pub trait SyntaxError: Sized + Display {
     /// A lexer error occured
-    fn lex_error<U, L>(lexer: &L, source: &'input str, span: &Span<'input>) -> Self
+    fn lex_error<'a, U, L>(lexer: &L, source: &'a str, span: &Span) -> Self
     where
         U: Unsigned + PrimInt + Hash,
-        L: NonStreamingLexer<'input, U> + Lexer<U> + ?Sized;
+        L: NonStreamingLexer<'a, U> + Lexer<U> + ?Sized;
 
     /// Parse error occured -within- a parser
-    fn parse_error<U, L>(lexer: &L, source: &'input str, span: &Span<'input>) -> Self
+    fn parse_error<'a, U, L>(lexer: &L, source: &'a str, span: &Span) -> Self
     where
         U: Unsigned + PrimInt + Hash,
-        L: NonStreamingLexer<'input, U> + Lexer<U> + ?Sized;
+        L: NonStreamingLexer<'a, U> + Lexer<U> + ?Sized;
 }

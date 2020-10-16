@@ -6,20 +6,20 @@ use crate::internals::parser::span::{Span, Spanner};
 
 /// Invoking a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Invoke<'input> {
-    #[serde(borrow)]
-    pub name: Box<Ident<'input>>,
-    #[serde(borrow)]
-    pub args: Box<[Expression<'input>]>,
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
+pub struct Invoke {
+    
+    pub name: Box<Ident>,
+    
+    pub args: Box<[Expression]>,
+    
+    pub span: Box<Span>,
 }
-impl<'input> AsRef<Span<'input>> for Invoke<'input> {
-    fn as_ref(&self) -> &Span<'input> {
+impl AsRef<Span> for Invoke {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for Invoke<'input> {
+impl Spanner for Invoke {
     fn fields(&self) {
         self.set_id();
         self.name.fields();
@@ -29,20 +29,20 @@ impl<'input> Spanner<'input> for Invoke<'input> {
     }
 }
 
-impl<'input> Invoke<'input> {
+impl Invoke {
     pub(in crate::internals::parser) fn new<I, F>(
-        name: Ident<'input>,
+        name: Ident,
         args: I,
         span: F,
     ) -> Result<Self, lrpar::Lexeme<u32>>
     where
-        I: IntoIterator<Item = Expression<'input>>,
-        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+        I: IntoIterator<Item = Expression>,
+        F: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
     {
         let span = Box::new(span()?);
         let args = args
             .into_iter()
-            .collect::<Vec<Expression<'input>>>()
+            .collect::<Vec<Expression>>()
             .into_boxed_slice();
         let name = Box::new(name);
         Ok(Self { name, args, span })

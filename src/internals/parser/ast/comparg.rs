@@ -9,43 +9,42 @@ use crate::internals::parser::span::{Span, Spanner};
 stuff! {
     Name: CompositionalArg;
     Trait: CompositionalArgTrait;
-    Lifetime: 'input;
     From: {
-        Span<'input> => Primative => is_prim => get_prim,
-        Template<'input> => Template => is_template => get_template,
-        Ident<'input> => Func => is_func => get_func,
-        Op<'input> => Op => is_op => get_op,
+        Span => Primative => is_prim => get_prim,
+        Template => Template => is_template => get_template,
+        Ident => Func => is_func => get_func,
+        Op => Op => is_op => get_op,
     }
 }
 
 /// Argument to a compositional function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct CompositionalFunctionArg<'input> {
-    #[serde(borrow)]
-    pub arg: CompositionalArg<'input>,
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
+pub struct CompositionalFunctionArg {
+    
+    pub arg: CompositionalArg,
+    
+    pub span: Box<Span>,
 }
-impl<'input> CompositionalFunctionArg<'input> {
+impl CompositionalFunctionArg {
     pub(in crate::internals::parser) fn new<S, C>(
         arg: C,
         span: S,
     ) -> Result<Self, lrpar::Lexeme<u32>>
     where
-        S: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
-        CompositionalArg<'input>: From<C>,
+        S: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
+        CompositionalArg: From<C>,
     {
         let span = Box::new(span()?);
         let arg = CompositionalArg::from(arg);
         Ok(Self { arg, span })
     }
 }
-impl<'input> AsRef<Span<'input>> for CompositionalFunctionArg<'input> {
-    fn as_ref(&self) -> &Span<'input> {
+impl AsRef<Span> for CompositionalFunctionArg {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for CompositionalFunctionArg<'input> {
+impl Spanner for CompositionalFunctionArg {
     fn fields(&self) {
         self.set_id();
         match &self.arg {
@@ -59,25 +58,25 @@ impl<'input> Spanner<'input> for CompositionalFunctionArg<'input> {
 
 /// Declaring a compositional function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct CompositionalFunction<'input> {
-    #[serde(borrow)]
-    pub name: Box<Ident<'input>>,
-    #[serde(borrow)]
-    pub null_arg: Box<CompositionalFunctionArg<'input>>,
-    #[serde(borrow)]
-    pub single_arg: Box<CompositionalFunctionArg<'input>>,
-    #[serde(borrow)]
-    pub collection_arg: Box<CompositionalFunctionArg<'input>>,
+pub struct CompositionalFunction {
+    
+    pub name: Box<Ident>,
+    
+    pub null_arg: Box<CompositionalFunctionArg>,
+    
+    pub single_arg: Box<CompositionalFunctionArg>,
+    
+    pub collection_arg: Box<CompositionalFunctionArg>,
     pub ret: Box<Kind>,
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
+    
+    pub span: Box<Span>,
 }
-impl<'input> AsRef<Span<'input>> for CompositionalFunction<'input> {
-    fn as_ref(&self) -> &Span<'input> {
+impl AsRef<Span> for CompositionalFunction {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for CompositionalFunction<'input> {
+impl Spanner for CompositionalFunction {
     fn fields(&self) {
         self.set_id();
         self.name.fields();
@@ -86,17 +85,17 @@ impl<'input> Spanner<'input> for CompositionalFunction<'input> {
         self.collection_arg.fields();
     }
 }
-impl<'input> CompositionalFunction<'input> {
+impl CompositionalFunction {
     pub(in crate::internals::parser) fn new<S>(
-        name: Ident<'input>,
-        n_arg: CompositionalFunctionArg<'input>,
-        s_arg: CompositionalFunctionArg<'input>,
-        c_arg: CompositionalFunctionArg<'input>,
+        name: Ident,
+        n_arg: CompositionalFunctionArg,
+        s_arg: CompositionalFunctionArg,
+        c_arg: CompositionalFunctionArg,
         ret: Kind,
         span: S,
     ) -> Result<Self, lrpar::Lexeme<u32>>
     where
-        S: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+        S: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
     {
         let span = Box::new(span()?);
         let name = Box::new(name);

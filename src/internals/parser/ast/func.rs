@@ -8,34 +8,34 @@ use crate::internals::parser::span::{Span, Spanner};
 
 /// Declaring a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct FunctionDec<'input> {
-    #[serde(borrow)]
-    pub name: Box<Ident<'input>>,
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
-    #[serde(borrow)]
-    pub args: Vec<FunctionArg<'input>>,
-    #[serde(borrow)]
-    pub body: Vec<Statement<'input>>,
+pub struct FunctionDec {
+    
+    pub name: Box<Ident>,
+    
+    pub span: Box<Span>,
+    
+    pub args: Vec<FunctionArg>,
+    
+    pub body: Vec<Statement>,
     pub ret: Box<Kind>,
 }
-impl<'input> FunctionDec<'input> {
+impl FunctionDec {
     #[inline(always)]
     pub(in crate::internals::parser) fn new<F, A, S>(
-        name: Ident<'input>,
+        name: Ident,
         args: A,
         body: S,
         ret: Kind,
         span: F,
     ) -> Result<Self, lrpar::Lexeme<u32>>
     where
-        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
-        A: IntoIterator<Item = FunctionArg<'input>> + Sized,
-        S: IntoIterator<Item = Statement<'input>> + Sized,
+        F: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
+        A: IntoIterator<Item = FunctionArg> + Sized,
+        S: IntoIterator<Item = Statement> + Sized,
     {
         let span = Box::new(span()?);
-        let args = args.into_iter().collect::<Vec<FunctionArg<'input>>>();
-        let body = body.into_iter().collect::<Vec<Statement<'input>>>();
+        let args = args.into_iter().collect::<Vec<FunctionArg>>();
+        let body = body.into_iter().collect::<Vec<Statement>>();
         let name = Box::new(name);
         let ret = Box::new(ret);
         Ok(Self {
@@ -47,12 +47,12 @@ impl<'input> FunctionDec<'input> {
         })
     }
 }
-impl<'input> AsRef<Span<'input>> for FunctionDec<'input> {
-    fn as_ref(&self) -> &Span<'input> {
+impl AsRef<Span> for FunctionDec {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for FunctionDec<'input> {
+impl Spanner for FunctionDec {
     fn fields(&self) {
         self.set_id();
         for arg in self.args.iter() {

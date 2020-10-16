@@ -7,20 +7,20 @@ use serde::{Deserialize, Serialize};
 
 /// Template is a variable who's value is given at run time.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Template<'input> {
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
-    #[serde(borrow)]
-    pub ident: Box<Ident<'input>>,
-    #[serde(borrow)]
-    pub behavior: Option<TemplateBehavior<'input>>,
+pub struct Template {
+    
+    pub span: Box<Span>,
+    
+    pub ident: Box<Ident>,
+    
+    pub behavior: Option<TemplateBehavior>,
 }
 
-impl<'input> Template<'input> {
+impl Template {
     /// build a new template
-    pub fn new<B>(ident: Ident<'input>, span: Span<'input>, behavior: B) -> Template<'input>
+    pub fn new<B>(ident: Ident, span: Span, behavior: B) -> Template
     where
-        B: Into<Option<TemplateBehavior<'input>>>,
+        B: Into<Option<TemplateBehavior>>,
     {
         let behavior = behavior.into();
         let ident = Box::new(ident);
@@ -32,14 +32,14 @@ impl<'input> Template<'input> {
         }
     }
 }
-impl<'input> AsRef<Span<'input>> for Template<'input> {
+impl AsRef<Span> for Template {
     #[inline(always)]
-    fn as_ref(&self) -> &Span<'input> {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
 
-impl<'input> Spanner<'input> for Template<'input> {
+impl Spanner for Template {
     fn fields<'a>(&'a self) {
         self.set_id();
         self.ident.fields();
@@ -62,29 +62,29 @@ impl<'input> Spanner<'input> for Template<'input> {
 
 /// TemplateBehavior defines fallback behavior
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum TemplateBehavior<'input> {
+pub enum TemplateBehavior {
     /// Fallback will just assign the value to what ever is contained in the fallback
-    #[serde(borrow)]
-    Fallback(TemplateFallback<'input>),
+    
+    Fallback(TemplateFallback),
 
     /// Assign will modify the global environment to set this value.
-    #[serde(borrow)]
-    Assign(TemplateFallback<'input>),
+    
+    Assign(TemplateFallback),
 }
 
-impl<'input> TemplateBehavior<'input> {
+impl TemplateBehavior {
     #[inline(always)]
-    pub fn fallback<F>(arg: F) -> TemplateBehavior<'input>
+    pub fn fallback<F>(arg: F) -> TemplateBehavior
     where
-        TemplateFallback<'input>: From<F>,
+        TemplateFallback: From<F>,
     {
         TemplateBehavior::Fallback(TemplateFallback::from(arg))
     }
 
     #[inline(always)]
-    pub fn assign<F>(arg: F) -> TemplateBehavior<'input>
+    pub fn assign<F>(arg: F) -> TemplateBehavior
     where
-        TemplateFallback<'input>: From<F>,
+        TemplateFallback: From<F>,
     {
         TemplateBehavior::Assign(TemplateFallback::from(arg))
     }
@@ -93,21 +93,21 @@ impl<'input> TemplateBehavior<'input> {
 /// TemplateFallback describes the fallback behavior, this type may not exist in all
 /// circumstances as not all templates have fallback behavior.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub enum TemplateFallback<'input> {
-    #[serde(borrow)]
-    Num(Box<Span<'input>>),
-    #[serde(borrow)]
-    Template(Box<Template<'input>>),
+pub enum TemplateFallback {
+    
+    Num(Box<Span>),
+    
+    Template(Box<Template>),
 }
 
-impl<'input> From<Span<'input>> for TemplateFallback<'input> {
-    fn from(s: Span<'input>) -> TemplateFallback<'input> {
+impl From<Span> for TemplateFallback {
+    fn from(s: Span) -> TemplateFallback {
         TemplateFallback::Num(Box::new(s))
     }
 }
 
-impl<'input> From<Template<'input>> for TemplateFallback<'input> {
-    fn from(s: Template<'input>) -> TemplateFallback<'input> {
+impl From<Template> for TemplateFallback {
+    fn from(s: Template) -> TemplateFallback {
         TemplateFallback::Template(Box::new(s))
     }
 }

@@ -9,27 +9,27 @@ use crate::internals::parser::span::{Span, Spanner};
 
 /// Assign represents an assignment
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Assign<'input> {
-    #[serde(borrow)]
-    pub name: Box<Ident<'input>>,
-    #[serde(borrow)]
-    pub expr: Box<Expression<'input>>,
+pub struct Assign {
+    
+    pub name: Box<Ident>,
+    
+    pub expr: Box<Expression>,
     pub kind: Box<Option<Kind>>,
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
+    
+    pub span: Box<Span>,
 }
-impl<'input> GetInternalExpression<'input> for Assign<'input> {
+impl GetInternalExpression for Assign {
     /// returns the defining expression
-    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a, 'input>> {
+    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a>> {
         Some(InternalExpression::Single(self.expr.as_ref()))
     }
 }
-impl<'input> AsRef<Span<'input>> for Assign<'input> {
-    fn as_ref(&self) -> &Span<'input> {
+impl AsRef<Span> for Assign {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
-impl<'input> Spanner<'input> for Assign<'input> {
+impl Spanner for Assign {
     fn fields(&self) {
         self.set_id();
         self.name.fields();
@@ -37,16 +37,16 @@ impl<'input> Spanner<'input> for Assign<'input> {
     }
 }
 
-impl<'input> Assign<'input> {
+impl Assign {
     pub(in crate::internals::parser) fn new<F, K>(
-        name: Ident<'input>,
+        name: Ident,
         kind: K,
-        expr: Expression<'input>,
+        expr: Expression,
         span: F,
     ) -> Result<Self, lrpar::Lexeme<u32>>
     where
         K: Into<Option<Kind>>,
-        F: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
+        F: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
     {
         let span = Box::new(span()?);
         let name = Box::new(name);

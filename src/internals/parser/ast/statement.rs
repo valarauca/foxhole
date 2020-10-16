@@ -7,20 +7,20 @@ use crate::internals::parser::ast::func::FunctionDec;
 use crate::internals::parser::span::{Span, Spanner};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Statement<'input> {
-    #[serde(borrow)]
-    pub sttm: Box<State<'input>>,
-    #[serde(borrow)]
-    pub span: Box<Span<'input>>,
+pub struct Statement {
+    
+    pub sttm: Box<State>,
+    
+    pub span: Box<Span>,
 }
 
-impl<'input> AsRef<Span<'input>> for Statement<'input> {
-    fn as_ref(&self) -> &Span<'input> {
+impl AsRef<Span> for Statement {
+    fn as_ref(&self) -> &Span {
         &self.span
     }
 }
 
-impl<'input> Spanner<'input> for Statement<'input> {
+impl Spanner for Statement {
     fn fields(&self) {
         self.set_id();
         match self.sttm.as_ref() {
@@ -32,14 +32,14 @@ impl<'input> Spanner<'input> for Statement<'input> {
     }
 }
 
-impl<'input> Statement<'input> {
+impl Statement {
     pub(in crate::internals::parser) fn new<I, S>(
         item: I,
         span: S,
     ) -> Result<Self, lrpar::Lexeme<u32>>
     where
-        S: FnOnce() -> Result<Span<'input>, lrpar::Lexeme<u32>>,
-        State<'input>: From<I>,
+        S: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
+        State: From<I>,
     {
         let span = Box::new(span()?);
         let sttm = Box::new(State::from(item));
@@ -50,20 +50,19 @@ impl<'input> Statement<'input> {
 stuff! {
     Name: State;
     Trait: StateTrait;
-    Lifetime: 'input;
     From: {
-        Assign<'input> => Declaration => is_dec => get_dec,
-        FunctionDec<'input> => Func => is_func => get_func,
-        CompositionalFunction<'input> => CompFunc => is_comp_func => get_comp_func,
-        Expression<'input> => Termination => is_term => get_term,
+        Assign => Declaration => is_dec => get_dec,
+        FunctionDec => Func => is_func => get_func,
+        CompositionalFunction => CompFunc => is_comp_func => get_comp_func,
+        Expression => Termination => is_term => get_term,
     }
 }
 
-impl<'input> AsRef<State<'input>> for Statement<'input> {
+impl AsRef<State> for Statement {
     #[inline(always)]
-    fn as_ref<'a>(&'a self) -> &'a State<'input> {
+    fn as_ref<'a>(&'a self) -> &'a State {
         self.sttm.as_ref()
     }
 }
 
-impl<'input> StateTrait<'input> for Statement<'input> {}
+impl StateTrait for Statement {}

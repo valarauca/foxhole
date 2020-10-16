@@ -16,9 +16,9 @@ pub use self::parser::parser_y::{parse, token_epp};
 
 /// master function for parsing source code
 #[allow(dead_code)]
-pub fn parse_code<'input, E>(source: &'input str) -> Result<Vec<Statement<'input>>, Vec<E>>
+pub fn parse_code<E>(source: &str) -> Result<Vec<Statement>, Vec<E>>
 where
-    E: SyntaxError<'input>,
+    E: SyntaxError
 {
     let def: LRNonStreamingLexerDef<u32> = lexerdef();
     {
@@ -29,7 +29,7 @@ where
 
 /// master function for serializing source code
 #[allow(dead_code)]
-pub fn serialize_ast<'input>(source: &[Statement<'input>]) -> Result<String, String> {
+pub fn serialize_ast(source: &[Statement]) -> Result<String, String> {
     match serde_json::to_string_pretty(source) {
         Ok(arg) => Ok(arg),
         Err(e) => Err(format!("{:?}", e)),
@@ -38,8 +38,8 @@ pub fn serialize_ast<'input>(source: &[Statement<'input>]) -> Result<String, Str
 
 /// master deserialize function
 #[allow(dead_code)]
-pub fn deserialize_ast<'input>(source: &'input str) -> Result<Vec<Statement<'input>>, String> {
-    match serde_json::from_str::<Vec<Statement<'input>>>(source) {
+pub fn deserialize_ast(source: &str) -> Result<Vec<Statement>, String> {
+    match serde_json::from_str::<Vec<Statement>>(source) {
         Ok(arg) => {
             for item in arg.iter() {
                 // initialize global ID tracking
@@ -58,15 +58,15 @@ fn parse_source<'lexer, 'input, U, P, E>(
     source: &'input str,
     def2: &'lexer dyn NonStreamingLexer<'input, U>,
     parser: &P,
-) -> Result<Vec<Statement<'input>>, Vec<E>>
+) -> Result<Vec<Statement>, Vec<E>>
 where
     'input: 'lexer,
-    E: SyntaxError<'input>,
+    E: SyntaxError,
     U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
     P: Fn(
         &'lexer dyn NonStreamingLexer<'input, U>,
     ) -> (
-        Option<Result<Vec<Statement<'input>>, Lexeme<U>>>,
+        Option<Result<Vec<Statement>, Lexeme<U>>>,
         Vec<LexParseError<U>>,
     ),
 {
@@ -88,7 +88,7 @@ where
         .collect();
 
     // extract a result
-    let mut return_value: Option<Vec<Statement<'input>>> = None;
+    let mut return_value: Option<Vec<Statement>> = None;
     match output {
         Option::Some(Err(lex)) => {
             let span = Span::new_panic(def2, lex);
