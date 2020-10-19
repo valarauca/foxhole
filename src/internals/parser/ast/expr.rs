@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use super::{GetInternalExpression, InternalExpression};
 use crate::internals::parser::ast::condition::Conditional;
 use crate::internals::parser::ast::ident::Ident;
 use crate::internals::parser::ast::invoke::Invoke;
@@ -32,17 +31,6 @@ impl Spanner for Expression {
             &Expr::Op(ref e) => e.fields(),
             &Expr::Parens(ref f) => f.fields(),
             &Expr::Cond(ref g) => g.fields(),
-        }
-    }
-}
-
-impl GetInternalExpression for Expression {
-    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a>> {
-        match self.kind.as_ref() {
-            &Expr::Cond(ref cond) => cond.get_expr(),
-            &Expr::Op(ref op) => op.get_expr(),
-            &Expr::Parens(ref par) => par.get_expr(),
-            _ => None,
         }
     }
 }

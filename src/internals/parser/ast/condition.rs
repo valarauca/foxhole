@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use super::{GetInternalExpression, InternalExpression};
-
 use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::span::{Span, Spanner};
 
@@ -15,15 +13,6 @@ pub struct Conditional {
     pub false_case: Box<Expression>,
 
     pub span: Box<Span>,
-}
-impl GetInternalExpression for Conditional {
-    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a>> {
-        Some(InternalExpression::Conditional {
-            cond: self.condition.as_ref(),
-            true_case: self.true_case.as_ref(),
-            false_case: self.false_case.as_ref(),
-        })
-    }
 }
 impl AsRef<Span> for Conditional {
     fn as_ref(&self) -> &Span {

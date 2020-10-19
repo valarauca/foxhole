@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use serde::{Deserialize, Serialize};
+
 /*
  * Useful macro for handling enums
  *
@@ -81,122 +83,103 @@ use crate::internals::parser::ast::statement::{State, Statement};
 use crate::internals::parser::ast::template::Template;
 use crate::internals::parser::span::{Span, Spanner};
 
-/// For representing internal arguments
-pub enum InternalExpression<'temp> {
-    Single(&'temp Expression),
-    Op {
-        left: &'temp Expression,
-        right: &'temp Expression,
-    },
-    Conditional {
-        cond: &'temp Expression,
-        true_case: &'temp Expression,
-        false_case: &'temp Expression,
-    },
-}
-
-/// GetInternalExpression is a useful system for transversing the AST
-pub trait GetInternalExpression {
-    fn get_expr<'a>(&'a self) -> Option<InternalExpression<'a>>;
-}
-
 /// Representation is all possible values of
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-pub enum Representation<'temp> {
-    Statement(&'temp Statement),
-    Ident(&'temp Ident),
-    Assign(&'temp Assign),
-    FunctionArg(&'temp FunctionArg),
-    Template(&'temp Template),
-    CompositionalFunctionArg(&'temp CompositionalFunctionArg),
-    CompositionalFunction(&'temp CompositionalFunction),
-    Conditional(&'temp Conditional),
-    Expression(&'temp Expression),
-    FunctionDec(&'temp FunctionDec),
-    Invoke(&'temp Invoke),
-    Operation(&'temp Operation),
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
+pub enum Representation {
+    Statement(Statement),
+    Ident(Ident),
+    Assign(Assign),
+    FunctionArg(FunctionArg),
+    Template(Template),
+    CompositionalFunctionArg(CompositionalFunctionArg),
+    CompositionalFunction(CompositionalFunction),
+    Conditional(Conditional),
+    Expression(Expression),
+    FunctionDec(FunctionDec),
+    Invoke(Invoke),
+    Operation(Operation),
 }
 
-impl<'temp> AsRef<Representation<'temp>> for Representation<'temp> {
+impl AsRef<Representation> for Representation {
     #[inline(always)]
     fn as_ref<'a>(&'a self) -> &'a Self {
         self
     }
 }
 
-impl<'temp> From<&'temp Statement> for Representation<'temp> {
-    fn from(arg: &'temp Statement) -> Self {
+impl From<Statement> for Representation {
+    fn from(arg: Statement) -> Self {
         Self::Statement(arg)
     }
 }
 
-impl<'temp> From<&'temp Ident> for Representation<'temp> {
-    fn from(arg: &'temp Ident) -> Self {
+impl From<Ident> for Representation {
+    fn from(arg: Ident) -> Self {
         Self::Ident(arg)
     }
 }
 
-impl<'temp> From<&'temp Assign> for Representation<'temp> {
-    fn from(arg: &'temp Assign) -> Self {
+impl From<Assign> for Representation {
+    fn from(arg: Assign) -> Self {
         Self::Assign(arg)
     }
 }
 
-impl<'temp> From<&'temp FunctionArg> for Representation<'temp> {
-    fn from(arg: &'temp FunctionArg) -> Self {
+impl From<FunctionArg> for Representation {
+    fn from(arg: FunctionArg) -> Self {
         Self::FunctionArg(arg)
     }
 }
 
-impl<'temp> From<&'temp Template> for Representation<'temp> {
-    fn from(arg: &'temp Template) -> Self {
+impl From<Template> for Representation {
+    fn from(arg: Template) -> Self {
         Self::Template(arg)
     }
 }
 
-impl<'temp> From<&'temp CompositionalFunctionArg> for Representation<'temp> {
-    fn from(arg: &'temp CompositionalFunctionArg) -> Self {
+impl From<CompositionalFunctionArg> for Representation {
+    fn from(arg: CompositionalFunctionArg) -> Self {
         Self::CompositionalFunctionArg(arg)
     }
 }
 
-impl<'temp> From<&'temp CompositionalFunction> for Representation<'temp> {
-    fn from(arg: &'temp CompositionalFunction) -> Self {
+impl From<CompositionalFunction> for Representation {
+    fn from(arg: CompositionalFunction) -> Self {
         Self::CompositionalFunction(arg)
     }
 }
 
-impl<'temp> From<&'temp Conditional> for Representation<'temp> {
-    fn from(arg: &'temp Conditional) -> Self {
+impl From<Conditional> for Representation {
+    fn from(arg: Conditional) -> Self {
         Self::Conditional(arg)
     }
 }
 
-impl<'temp> From<&'temp Expression> for Representation<'temp> {
-    fn from(arg: &'temp Expression) -> Self {
+impl From<Expression> for Representation {
+    fn from(arg: Expression) -> Self {
         Self::Expression(arg)
     }
 }
 
-impl<'temp> From<&'temp FunctionDec> for Representation<'temp> {
-    fn from(arg: &'temp FunctionDec) -> Self {
+impl From<FunctionDec> for Representation {
+    fn from(arg: FunctionDec) -> Self {
         Self::FunctionDec(arg)
     }
 }
 
-impl<'temp> From<&'temp Invoke> for Representation<'temp> {
-    fn from(arg: &'temp Invoke) -> Self {
+impl From<Invoke> for Representation {
+    fn from(arg: Invoke) -> Self {
         Self::Invoke(arg)
     }
 }
 
-impl<'temp> From<&'temp Operation> for Representation<'temp> {
-    fn from(arg: &'temp Operation) -> Self {
+impl From<Operation> for Representation {
+    fn from(arg: Operation) -> Self {
         Self::Operation(arg)
     }
 }
 
-impl<'temp> AsRef<Span> for Representation<'temp> {
+impl AsRef<Span> for Representation {
     fn as_ref<'a>(&'a self) -> &'a Span {
         match self {
             &Self::Statement(ref a) => a.as_ref(),
@@ -215,10 +198,10 @@ impl<'temp> AsRef<Span> for Representation<'temp> {
     }
 }
 
-impl<'temp> Spanner for Representation<'temp> {}
+impl Spanner for Representation {}
 
 /// Getter and is methods on Representation
-pub trait ReprTrait<'temp>: AsRef<Representation<'temp>> {
+pub trait ReprTrait: AsRef<Representation> {
     fn is_statement(&self) -> bool {
         match self.as_ref() {
             &Representation::Statement(_) => true,
@@ -292,78 +275,78 @@ pub trait ReprTrait<'temp>: AsRef<Representation<'temp>> {
         }
     }
 
-    fn get_statement(&self) -> Option<&'temp Statement> {
+    fn get_statement<'a>(&'a self) -> Option<&'a Statement> {
         match self.as_ref() {
-            &Representation::Statement(arg) => Some(arg),
+            &Representation::Statement(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_ident(&self) -> Option<&'temp Ident> {
+    fn get_ident<'a>(&'a self) -> Option<&'a Ident> {
         match self.as_ref() {
-            &Representation::Ident(arg) => Some(arg),
+            &Representation::Ident(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_sssign(&self) -> Option<&'temp Assign> {
+    fn get_assign<'a>(&'a self) -> Option<&'a Assign> {
         match self.as_ref() {
-            &Representation::Assign(arg) => Some(arg),
+            &Representation::Assign(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_function_arg(&self) -> Option<&'temp FunctionArg> {
+    fn get_function_arg<'a>(&'a self) -> Option<&'a FunctionArg> {
         match self.as_ref() {
-            &Representation::FunctionArg(arg) => Some(arg),
+            &Representation::FunctionArg(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_template(&self) -> Option<&'temp Template> {
+    fn get_template<'a>(&'a self) -> Option<&'a Template> {
         match self.as_ref() {
-            &Representation::Template(arg) => Some(arg),
+            &Representation::Template(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_compositional_function_arg(&self) -> Option<&'temp CompositionalFunctionArg> {
+    fn get_compositional_function_arg<'a>(&'a self) -> Option<&'a CompositionalFunctionArg> {
         match self.as_ref() {
-            &Representation::CompositionalFunctionArg(arg) => Some(arg),
+            &Representation::CompositionalFunctionArg(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_compositional_function(&self) -> Option<&'temp CompositionalFunction> {
+    fn get_compositional_function<'a>(&'a self) -> Option<&'a CompositionalFunction> {
         match self.as_ref() {
-            &Representation::CompositionalFunction(arg) => Some(arg),
+            &Representation::CompositionalFunction(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_conditional(&self) -> Option<&'temp Conditional> {
+    fn get_conditional<'a>(&'a self) -> Option<&'a Conditional> {
         match self.as_ref() {
-            &Representation::Conditional(arg) => Some(arg),
+            &Representation::Conditional(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_expression(&self) -> Option<&'temp Expression> {
+    fn get_expression<'a>(&'a self) -> Option<&'a Expression> {
         match self.as_ref() {
-            &Representation::Expression(arg) => Some(arg),
+            &Representation::Expression(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_function_dec(&self) -> Option<&'temp FunctionDec> {
+    fn get_function_dec<'a>(&'a self) -> Option<&'a FunctionDec> {
         match self.as_ref() {
-            &Representation::FunctionDec(arg) => Some(arg),
+            &Representation::FunctionDec(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_invoke(&self) -> Option<&'temp Invoke> {
+    fn get_invoke<'a>(&'a self) -> Option<&'a Invoke> {
         match self.as_ref() {
-            &Representation::Invoke(arg) => Some(arg),
+            &Representation::Invoke(ref arg) => Some(arg),
             _ => None,
         }
     }
-    fn get_operation(&self) -> Option<&'temp Operation> {
+    fn get_operation<'a>(&'a self) -> Option<&'a Operation> {
         match self.as_ref() {
-            &Representation::Operation(arg) => Some(arg),
+            &Representation::Operation(ref arg) => Some(arg),
             _ => None,
         }
     }
 }
 
-impl<'temp> ReprTrait<'temp> for Representation<'temp> {}
+impl ReprTrait for Representation {}
