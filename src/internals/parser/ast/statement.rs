@@ -9,7 +9,6 @@ use crate::internals::parser::span::{Span, Spanner};
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Statement {
     pub sttm: Box<State>,
-
     pub span: Box<Span>,
 }
 

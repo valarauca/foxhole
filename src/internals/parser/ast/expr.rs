@@ -1,11 +1,20 @@
 use serde::{Deserialize, Serialize};
 
-use crate::internals::parser::ast::condition::Conditional;
-use crate::internals::parser::ast::ident::Ident;
-use crate::internals::parser::ast::invoke::Invoke;
-use crate::internals::parser::ast::op::Operation;
-use crate::internals::parser::ast::template::Template;
-use crate::internals::parser::span::{Span, Spanner};
+use crate::internals::{
+    parser::{
+        span::{Span,Spanner},
+        ast::{
+            condition::Conditional,
+            ident::Ident,
+            invoke::Invoke,
+            op::Operation,
+            template::Template,
+        }
+    },
+    canonization::graph::{
+        EdgeTrait,NodeTrait,Graph,Node,Edge,NodeIndex,ChildLambda,
+    }
+};
 
 /// Expressions are just the meet & potatos of code.
 /// random bits saying `y + 2` and what not.
@@ -15,6 +24,8 @@ pub struct Expression {
 
     pub span: Box<Span>,
 }
+impl NodeTrait for Expression { }
+
 impl AsRef<Span> for Expression {
     fn as_ref(&self) -> &Span {
         &self.span

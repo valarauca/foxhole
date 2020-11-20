@@ -1,9 +1,15 @@
-use crate::internals::parser::{
-    ast::ident::Ident,
-    span::{Span, Spanner},
+use serde::{Deserialize, Serialize};
+
+use crate::internals::{
+    parser::{
+        ast::ident::Ident,
+        span::{Span, Spanner},
+    },
+    canonization::graph::{
+        EdgeTrait,NodeTrait,Graph,Node,Edge,NodeIndex,ChildLambda,
+    }
 };
 
-use serde::{Deserialize, Serialize};
 
 /// Template is a variable who's value is given at run time.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -14,6 +20,29 @@ pub struct Template {
 
     pub behavior: Option<TemplateBehavior>,
 }
+
+#[derive(Default,Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+pub struct TemplateSpanEdge;
+
+impl EdgeTrait for TemplateSpanEdge {
+    type N = Span;
+}
+
+
+#[derive(Default,Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+pub struct TemplateIdentEdge;
+
+impl EdgeTrait for TemplateIdentEdge {
+    type N = Ident;
+}
+
+#[derive(Default,Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+pub struct TemplateBehaviorEdge;
+
+impl EdgeTrait for TemplateBehaviorEdge {
+    type N = Option<TemplateBehavior>;
+}
+
 
 impl Template {
     /// build a new template

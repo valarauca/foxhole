@@ -1,8 +1,16 @@
 use serde::{Deserialize, Serialize};
-
-use crate::internals::parser::ast::expr::Expression;
-use crate::internals::parser::ast::ident::Ident;
-use crate::internals::parser::span::{Span, Spanner};
+use crate::internals::{
+    parser::{
+        span::{Span,Spanner},
+        ast::{
+            expr::Expression,
+            ident::Ident,
+        },
+    },
+    canonization::graph::{
+        EdgeTrait,NodeTrait,Graph,Node,Edge,NodeIndex,ChildLambda,
+    }
+};
 
 /// Invoking a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -13,6 +21,59 @@ pub struct Invoke {
 
     pub span: Box<Span>,
 }
+
+#[derive(Default,Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+pub struct InvokeSpan;
+
+impl EdgeTrait for InvokeSpan {
+    type N = Span;
+}
+
+#[derive(Default,Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+pub struct InvokeIdent;
+
+impl EdgeTrait for InvokeIdent {
+    type N = Ident;
+}
+
+#[derive(Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+pub struct InvokeArg(usize);
+
+impl EdgeTrait for InvokeArg {
+    type N = Expression;
+}
+
+impl NodeTrait for Invoke {
+
+    fn children(&self) -> Vec<ChildLambda> {
+
+        let name: Ident = self.name.as_ref().clone();
+
+        let span: Span = self.span.as_ref().clone();
+
+        let arg_mapper = |(pos,expr): (usize,&Expression)| -> ChildLambda {
+            let expr = expr.clone();
+            Box::new(move |graph,parent| {
+                let id = graph.build_from_root(expr);
+                graph.add_edge(parent,id,InvokeArg(pos));
+            })
+        };
+
+        let mut output = self.args.iter().enumerate().map(arg_mapper).collect::<Vec<ChildLambda>>();
+        output.push(Box::new(move |graph,parent| {
+            let id = graph.build_from_root(span);
+            graph.add_edge(parent,id,InvokeSpan::default());
+        }));
+        output.push(Box::new(move |graph,parent| {
+           let id = graph.build_from_root(name);
+           graph.add_edge(parent,id,InvokeIdent::default());
+        }));
+
+        output
+    }
+}
+
+
 impl AsRef<Span> for Invoke {
     fn as_ref(&self) -> &Span {
         &self.span
