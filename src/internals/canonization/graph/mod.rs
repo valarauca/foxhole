@@ -44,6 +44,7 @@ impl Graph {
     where
         E: EdgeTrait + Sized,
     {
+        debug_assert!(self.data[to].is::<E::N>());
         let edge: Box<dyn Any + 'static> = Box::new(edge);
         self.data.add_edge(from, to, edge);
     }
