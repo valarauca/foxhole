@@ -1,10 +1,7 @@
-
-use std::{
-    any::Any,
-};
+use std::any::Any;
 
 use petgraph::{
-    graph::{Graph as PetGraph, NodeIndex as NodeIdx, EdgeIndex as EdgeIdx},
+    graph::{EdgeIndex as EdgeIdx, Graph as PetGraph, NodeIndex as NodeIdx},
     visit::EdgeRef,
     Directed, Direction,
 };
@@ -16,20 +13,17 @@ pub type Node = Box<dyn Any + 'static>;
 pub type NodeIndex = NodeIdx<u32>;
 pub type Edge = Box<dyn Any + 'static>;
 pub type EdgeIndex = EdgeIdx<u32>;
-pub type ChildLambda = Box<dyn FnOnce(&mut Graph,NodeIndex)>;
-
+pub type ChildLambda = Box<dyn FnOnce(&mut Graph, NodeIndex)>;
 
 /// Top Level Graph Object.
 pub struct Graph {
-    data: PetGraph<Node,Edge,Directed, u32>,
+    data: PetGraph<Node, Edge, Directed, u32>,
 }
 
 impl Graph {
-
-
     /// manages inserting children nodes for a given node type.
     pub fn build_from_root<N>(&mut self, node: N) -> NodeIndex
-    where 
+    where
         N: NodeTrait + Sized + Eq + Clone,
     {
         let children = node.children();
@@ -49,7 +43,6 @@ impl Graph {
         self.data.add_edge(from, to, edge);
     }
 
-
     pub fn get_child_node<'a, E>(&'a self, idx: NodeIndex, edge: &E) -> Option<&'a E::N>
     where
         E: EdgeTrait,
@@ -59,9 +52,12 @@ impl Graph {
             .next()
     }
 
-
     #[inline(always)]
-    fn get_child_indexes<'a,E>(&'a self, idx: NodeIndex, edge: &'a E) -> impl Iterator<Item=NodeIndex> + 'a
+    fn get_child_indexes<'a, E>(
+        &'a self,
+        idx: NodeIndex,
+        edge: &'a E,
+    ) -> impl Iterator<Item = NodeIndex> + 'a
     where
         E: EdgeTrait,
     {
@@ -71,17 +67,18 @@ impl Graph {
             .map(|e| e.target())
     }
 
-
     /// Inserts a node into a graph, verifying that no other copy of that node exists in the graph.
     pub fn raw_insert_node<N>(&mut self, node: N) -> NodeIndex
     where
         N: NodeTrait + Sized + Eq + Clone,
     {
-        match self.data
+        match self
+            .data
             .node_indices()
             .into_iter()
             .filter(|n| node.same_node(&self.data[*n]))
-            .next() {
+            .next()
+        {
             Option::None => self.data.add_node(node.generalize()),
             Option::Some(id) => id,
         }

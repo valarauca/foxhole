@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::internals::canonization::graph::NodeTrait;
+
 /// Kind is used to hold typing information
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub enum Kind {
@@ -8,3 +10,5 @@ pub enum Kind {
     CollOfInt,
     CollOfBool,
 }
+
+impl NodeTrait for Kind {}

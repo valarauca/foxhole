@@ -6,11 +6,15 @@ use crate::internals::parser::ast::expr::Expression;
 use crate::internals::parser::ast::func::FunctionDec;
 use crate::internals::parser::span::{Span, Spanner};
 
+use crate::internals::canonization::graph::NodeTrait;
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Statement {
     pub sttm: Box<State>,
     pub span: Box<Span>,
 }
+
+impl NodeTrait for Statement {}
 
 impl AsRef<Span> for Statement {
     fn as_ref(&self) -> &Span {

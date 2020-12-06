@@ -1,16 +1,11 @@
-use serde::{Deserialize, Serialize};
 use crate::internals::{
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
     parser::{
-        span::{Span,Spanner},
-        ast::{
-            expr::Expression,
-            ident::Ident,
-        },
+        ast::{expr::Expression, ident::Ident},
+        span::{Span, Spanner},
     },
-    canonization::graph::{
-        EdgeTrait,NodeTrait,Graph,Node,Edge,NodeIndex,ChildLambda,
-    }
 };
+use serde::{Deserialize, Serialize};
 
 /// Invoking a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -22,21 +17,21 @@ pub struct Invoke {
     pub span: Box<Span>,
 }
 
-#[derive(Default,Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct InvokeSpan;
 
 impl EdgeTrait for InvokeSpan {
     type N = Span;
 }
 
-#[derive(Default,Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct InvokeIdent;
 
 impl EdgeTrait for InvokeIdent {
     type N = Ident;
 }
 
-#[derive(Copy,Clone,PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct InvokeArg(usize);
 
 impl EdgeTrait for InvokeArg {
@@ -44,35 +39,37 @@ impl EdgeTrait for InvokeArg {
 }
 
 impl NodeTrait for Invoke {
-
     fn children(&self) -> Vec<ChildLambda> {
-
         let name: Ident = self.name.as_ref().clone();
 
         let span: Span = self.span.as_ref().clone();
 
-        let arg_mapper = |(pos,expr): (usize,&Expression)| -> ChildLambda {
+        let arg_mapper = |(pos, expr): (usize, &Expression)| -> ChildLambda {
             let expr = expr.clone();
-            Box::new(move |graph,parent| {
+            Box::new(move |graph, parent| {
                 let id = graph.build_from_root(expr);
-                graph.add_edge(parent,id,InvokeArg(pos));
+                graph.add_edge(parent, id, InvokeArg(pos));
             })
         };
 
-        let mut output = self.args.iter().enumerate().map(arg_mapper).collect::<Vec<ChildLambda>>();
-        output.push(Box::new(move |graph,parent| {
+        let mut output = self
+            .args
+            .iter()
+            .enumerate()
+            .map(arg_mapper)
+            .collect::<Vec<ChildLambda>>();
+        output.push(Box::new(move |graph, parent| {
             let id = graph.build_from_root(span);
-            graph.add_edge(parent,id,InvokeSpan::default());
+            graph.add_edge(parent, id, InvokeSpan::default());
         }));
-        output.push(Box::new(move |graph,parent| {
-           let id = graph.build_from_root(name);
-           graph.add_edge(parent,id,InvokeIdent::default());
+        output.push(Box::new(move |graph, parent| {
+            let id = graph.build_from_root(name);
+            graph.add_edge(parent, id, InvokeIdent::default());
         }));
 
         output
     }
 }
-
 
 impl AsRef<Span> for Invoke {
     fn as_ref(&self) -> &Span {

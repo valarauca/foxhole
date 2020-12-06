@@ -1,10 +1,11 @@
+use crate::internals::{
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    parser::{
+        ast::{args::FunctionArg, ident::Ident, kind::Kind, statement::Statement},
+        span::{Span, Spanner},
+    },
+};
 use serde::{Deserialize, Serialize};
-
-use crate::internals::parser::ast::args::FunctionArg;
-use crate::internals::parser::ast::ident::Ident;
-use crate::internals::parser::ast::kind::Kind;
-use crate::internals::parser::ast::statement::Statement;
-use crate::internals::parser::span::{Span, Spanner};
 
 /// Declaring a function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -18,6 +19,87 @@ pub struct FunctionDec {
     pub body: Vec<Statement>,
     pub ret: Box<Kind>,
 }
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FunctionDecName;
+
+impl EdgeTrait for FunctionDecName {
+    type N = Ident;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FunctionDecSpan;
+
+impl EdgeTrait for FunctionDecSpan {
+    type N = Span;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FunctionDecArgs(usize);
+
+impl EdgeTrait for FunctionDecArgs {
+    type N = FunctionArg;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FunctionDecStatement(usize);
+
+impl EdgeTrait for FunctionDecStatement {
+    type N = Statement;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FunctionDecReturnType;
+
+impl EdgeTrait for FunctionDecReturnType {
+    type N = Kind;
+}
+
+impl NodeTrait for FunctionDec {
+    fn children(&self) -> Vec<ChildLambda> {
+        let arg_mapper = |(pos, arg): (usize, &FunctionArg)| -> ChildLambda {
+            let arg = arg.clone();
+            Box::new(move |graph, parent| {
+                let id = graph.build_from_root(arg);
+                graph.add_edge(parent, id, FunctionDecArgs(pos));
+            })
+        };
+        let statement_mapper = |(pos, state): (usize, &Statement)| -> ChildLambda {
+            let statement = state.clone();
+            Box::new(move |graph, parent| {
+                let id = graph.build_from_root(statement);
+                graph.add_edge(parent, id, FunctionDecStatement(pos));
+            })
+        };
+
+        let span: Span = self.span.as_ref().clone();
+        let name: Ident = self.name.as_ref().clone();
+        let kind: Kind = self.ret.as_ref().clone();
+        let v: Vec<ChildLambda> = vec![
+            Box::new(move |graph, parent| {
+                let id = graph.build_from_root(name);
+                graph.add_edge(parent, id, FunctionDecName::default());
+            }),
+            Box::new(move |graph, parent| {
+                let id = graph.build_from_root(span);
+                graph.add_edge(parent, id, FunctionDecSpan::default());
+            }),
+            Box::new(move |graph, parent| {
+                let id = graph.build_from_root(kind);
+                graph.add_edge(parent, id, FunctionDecReturnType::default());
+            }),
+        ];
+
+        self.args
+            .iter()
+            .enumerate()
+            .map(arg_mapper)
+            .chain(self.body.iter().enumerate().map(statement_mapper))
+            .chain(v.into_iter())
+            .collect()
+    }
+}
+
 impl FunctionDec {
     #[inline(always)]
     pub(in crate::internals::parser) fn new<F, A, S>(

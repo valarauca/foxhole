@@ -1,24 +1,22 @@
-
-use std::any::Any;
-use petgraph::graph::{Graph as PetGraph};
+use petgraph::graph::Graph as PetGraph;
 use petgraph::Directed;
+use std::any::Any;
 
-use super::{Edge,Node,NodeIndex,Graph,ChildLambda};
-
+use super::{ChildLambda, Edge, Graph, Node, NodeIndex};
 
 pub trait EdgeTrait: Eq + Sized + 'static + Any {
     type N: 'static;
 
     /// checks if a graph edge is the same type, and equal to "this" edge.
     fn same_edge(&self, other: &Edge) -> bool {
-        other.downcast_ref::<Self>()
+        other
+            .downcast_ref::<Self>()
             .map(|x| self.eq(x))
             .unwrap_or_else(|| false)
     }
 }
 
 pub trait NodeTrait: 'static + Any {
-
     /// convert self into general node type
     fn generalize(self) -> Node
     where
@@ -42,10 +40,9 @@ pub trait NodeTrait: 'static + Any {
     where
         Self: Sized + Eq + Clone,
     {
-        other.downcast_ref::<Self>()
+        other
+            .downcast_ref::<Self>()
             .map(|x| self.eq(x))
             .unwrap_or_else(|| false)
     }
-
 }
-
