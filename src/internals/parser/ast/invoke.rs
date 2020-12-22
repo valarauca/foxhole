@@ -1,5 +1,5 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
     parser::{
         ast::{expr::Expression, ident::Ident},
         span::{Span, Spanner},
@@ -40,34 +40,14 @@ impl EdgeTrait for InvokeArg {
 
 impl NodeTrait for Invoke {
     fn children(&self) -> Vec<ChildLambda> {
-        let name: Ident = self.name.as_ref().clone();
-
-        let span: Span = self.span.as_ref().clone();
-
-        let arg_mapper = |(pos, expr): (usize, &Expression)| -> ChildLambda {
-            let expr = expr.clone();
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(expr);
-                graph.add_edge(parent, id, InvokeArg(pos));
-            })
-        };
-
-        let mut output = self
-            .args
-            .iter()
+        let mut v = vec![
+            build_typed_child_lambda::<_,InvokeSpan>(&self.span),
+            build_typed_child_lambda::<_,InvokeIdent>(&self.name),
+        ];
+        v.extend(self.args.iter()
             .enumerate()
-            .map(arg_mapper)
-            .collect::<Vec<ChildLambda>>();
-        output.push(Box::new(move |graph, parent| {
-            let id = graph.build_from_root(span);
-            graph.add_edge(parent, id, InvokeSpan::default());
-        }));
-        output.push(Box::new(move |graph, parent| {
-            let id = graph.build_from_root(name);
-            graph.add_edge(parent, id, InvokeIdent::default());
-        }));
-
-        output
+            .map(|(pos,expr)| build_data_child_lambda(expr,InvokeArg(pos))));
+        v
     }
 }
 

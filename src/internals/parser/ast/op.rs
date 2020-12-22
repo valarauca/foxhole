@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
     parser::{
         ast::Expression,
         span::{Span, Spanner},
@@ -49,28 +49,11 @@ impl EdgeTrait for OperationSpan {
 
 impl NodeTrait for Operation {
     fn children(&self) -> Vec<ChildLambda> {
-        let left: Expression = self.left.as_ref().clone();
-        let right: Expression = self.right.as_ref().clone();
-        let op: Op = self.op.clone();
-        let span: Span = self.span.as_ref().clone();
-
         vec![
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(left);
-                graph.add_edge(parent, id, OperationLeft::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(right);
-                graph.add_edge(parent, id, OperationRight::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(op);
-                graph.add_edge(parent, id, OperationOp::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(span);
-                graph.add_edge(parent, id, OperationSpan::default());
-            }),
+            build_typed_child_lambda::<_,OperationRight>(&self.left),
+            build_typed_child_lambda::<_,OperationRight>(&self.right),
+            build_typed_child_lambda::<_,OperationSpan>(&self.span),
+            build_data_child_lambda(&self.op, OperationOp::default()),
         ]
     }
 }

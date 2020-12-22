@@ -1,5 +1,5 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
     parser::{
         span::{Span,Spanner},
         ast::{func::FunctionDec, expr::Expression, comparg::CompositionalFunction, assign::Assign},
@@ -52,39 +52,19 @@ impl EdgeTrait for StatementExpr {
 
 impl NodeTrait for Statement {
     fn children(&self) -> Vec<ChildLambda> {
-        let span: Span = self.span.as_ref().clone();
-        let mut v: Vec<ChildLambda> = vec![Box::new(move |graph,parent| {
-            let id = graph.build_from_root(span);
-            graph.add_edge(parent, id, StatementSpan::default());
-        })];
-        let lambda: ChildLambda = match self.sttm.as_ref() {
+        let mut v = vec![build_typed_child_lambda::<_,StatementSpan>(&self.span)];
+        let lambda = match self.sttm.as_ref() {
             State::Declaration(ref assign) => {
-                let assign: Assign = assign.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(assign);
-                    graph.add_edge(parent, id, StatementAssign::default());
-                })
+                build_typed_child_lambda::<_,StatementAssign>(assign)
             },
             State::Func(ref func) => {
-                let func: FunctionDec = func.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(func);
-                    graph.add_edge(parent, id, StatementAssign::default());
-                })
+                build_typed_child_lambda::<_,StatementFuncDec>(func)
             },
             State::CompFunc(ref comp_func) => {
-                let comp_func: CompositionalFunction = comp_func.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(comp_func);
-                    graph.add_edge(parent, id, StatementCompFuncDec::default());
-                })
+                build_typed_child_lambda::<_,StatementCompFuncDec>(comp_func)
             },
             State::Termination(ref term) => {
-                let term: Expression = term.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(term);
-                    graph.add_edge(parent, id, StatementExpr::default());
-                })
+                build_typed_child_lambda::<_,StatementExpr>(term)
             },
         };
         v.push(lambda);

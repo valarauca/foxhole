@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
     parser::{
         ast::Expression,
         span::{Span, Spanner},
@@ -50,27 +50,11 @@ impl EdgeTrait for ConditionalSpan {
 
 impl NodeTrait for Conditional {
     fn children(&self) -> Vec<ChildLambda> {
-        let condition: Expression = self.condition.as_ref().clone();
-        let true_case: Expression = self.true_case.as_ref().clone();
-        let false_case: Expression = self.false_case.as_ref().clone();
-        let span: Span = self.span.as_ref().clone();
         vec![
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(condition);
-                graph.add_edge(parent, id, ConditionalCondition::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(true_case);
-                graph.add_edge(parent, id, ConditionalTrueCase::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(false_case);
-                graph.add_edge(parent, id, ConditionalFalseCase::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(span);
-                graph.add_edge(parent, id, ConditionalSpan::default());
-            }),
+            build_typed_child_lambda::<_,ConditionalCondition>(&self.condition),
+            build_typed_child_lambda::<_,ConditionalTrueCase>(&self.true_case),
+            build_typed_child_lambda::<_,ConditionalFalseCase>(&self.false_case),
+            build_typed_child_lambda::<_,ConditionalSpan>(&self.span),
         ]
     }
 }

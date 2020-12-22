@@ -15,6 +15,46 @@ pub type Edge = Box<dyn Any + 'static>;
 pub type EdgeIndex = EdgeIdx<u32>;
 pub type ChildLambda = Box<dyn FnOnce(&mut Graph, NodeIndex)>;
 
+/// Handles some boilerplate of building a lambda function to insert nodes.
+/// In effect this operation is always identical. It always:
+/// 
+/// 1. Inserts the `&N` argument,
+/// 2. links the "parent" with the new `&N` argument via `E`.
+///
+/// The "parent" is what ever is inserted when the `&N` arg's
+/// `build_from_root` is handled, yes this operation is recursive.
+///
+/// The generic parameters of this function are "not fun", but this
+/// function saves us like 6 lines of code in well over 100 locations
+/// in the code base.
+///
+/// Its a confusing abstraction, but a useful one
+pub fn build_data_child_lambda<E>(node: &<E as EdgeTrait>::N, edge: E) -> ChildLambda
+where
+    E: EdgeTrait,
+    <E as EdgeTrait>::N: Clone + Eq + NodeTrait,
+{
+    let item: <E as EdgeTrait>::N = node.clone();
+    Box::new(move |graph, parent| {
+        let id = graph.build_from_root(item);
+        graph.add_edge(parent, id, edge);
+    })
+}
+
+pub fn build_typed_child_lambda<N,E>(node: &N) -> ChildLambda
+where
+    E: EdgeTrait + Default,
+    <E as EdgeTrait>::N: Clone + Eq + NodeTrait,
+    N: AsRef<<E as EdgeTrait>::N>,
+{
+    let item: <E as EdgeTrait>::N = node.as_ref().clone();
+    Box::new(move |graph, parent| {
+        let id = graph.build_from_root(item);
+        graph.add_edge(parent, id, <E as Default>::default())
+    })
+}
+
+
 /// Top Level Graph Object.
 pub struct Graph {
     data: PetGraph<Node, Edge, Directed, u32>,
@@ -70,17 +110,8 @@ impl Graph {
     /// Inserts a node into a graph, verifying that no other copy of that node exists in the graph.
     pub fn raw_insert_node<N>(&mut self, node: N) -> NodeIndex
     where
-        N: NodeTrait + Sized + Eq + Clone,
+        N: NodeTrait + Sized + Clone + Eq,
     {
-        match self
-            .data
-            .node_indices()
-            .into_iter()
-            .filter(|n| node.same_node(&self.data[*n]))
-            .next()
-        {
-            Option::None => self.data.add_node(node.generalize()),
-            Option::Some(id) => id,
-        }
+        self.data.add_node(node.generalize())
     }
 }

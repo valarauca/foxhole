@@ -1,5 +1,5 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
     parser::{
         ast::{args::FunctionArg, ident::Ident, kind::Kind, statement::Statement},
         span::{Span, Spanner},
@@ -57,46 +57,16 @@ impl EdgeTrait for FunctionDecReturnType {
 
 impl NodeTrait for FunctionDec {
     fn children(&self) -> Vec<ChildLambda> {
-        let arg_mapper = |(pos, arg): (usize, &FunctionArg)| -> ChildLambda {
-            let arg = arg.clone();
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(arg);
-                graph.add_edge(parent, id, FunctionDecArgs(pos));
-            })
-        };
-        let statement_mapper = |(pos, state): (usize, &Statement)| -> ChildLambda {
-            let statement = state.clone();
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(statement);
-                graph.add_edge(parent, id, FunctionDecStatement(pos));
-            })
-        };
-
-        let span: Span = self.span.as_ref().clone();
-        let name: Ident = self.name.as_ref().clone();
-        let kind: Kind = self.ret.as_ref().clone();
-        let v: Vec<ChildLambda> = vec![
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(name);
-                graph.add_edge(parent, id, FunctionDecName::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(span);
-                graph.add_edge(parent, id, FunctionDecSpan::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(kind);
-                graph.add_edge(parent, id, FunctionDecReturnType::default());
-            }),
+        let mut v = vec![
+            build_typed_child_lambda::<_,FunctionDecReturnType>(&self.ret),
+            build_typed_child_lambda::<_,FunctionDecSpan>(&self.span),
+            build_typed_child_lambda::<_,FunctionDecName>(&self.name),
         ];
-
-        self.args
-            .iter()
-            .enumerate()
-            .map(arg_mapper)
-            .chain(self.body.iter().enumerate().map(statement_mapper))
-            .chain(v.into_iter())
-            .collect()
+        v.extend(
+            self.args.iter().enumerate().map(|(pos,arg)| build_data_child_lambda(arg,FunctionDecArgs(pos))));
+        v.extend(
+            self.body.iter().enumerate().map(|(pos,statement)| build_data_child_lambda(statement, FunctionDecStatement(pos))));
+        v
     }
 }
 

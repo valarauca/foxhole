@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
     parser::{
         ast::{
             condition::Conditional, ident::Ident, invoke::Invoke, op::Operation, template::Template,
@@ -77,64 +77,31 @@ impl EdgeTrait for ExpressionSpan {
 
 impl NodeTrait for Expression {
     fn children(&self) -> Vec<ChildLambda> {
-        let lambda: ChildLambda = match self.kind.as_ref() {
-            Expr::Var(ref ident) => {
-                let ident: Ident = ident.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(ident);
-                    graph.add_edge(parent, id, ExpressionVar::default());
-                })
-            }
-            Expr::Num(ref num) => {
-                let num: Span = num.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(num);
-                    graph.add_edge(parent, id, ExpressionNum::default());
-                })
-            }
-            Expr::Template(ref template) => {
-                let template: Template = template.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(template);
-                    graph.add_edge(parent, id, ExpressionTemplate::default());
-                })
-            }
-            Expr::Invoke(ref invoke) => {
-                let invoke: Invoke = invoke.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(invoke);
-                    graph.add_edge(parent, id, ExpressionInvoke::default());
-                })
-            }
-            Expr::Op(ref op) => {
-                let op: Operation = op.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(op);
-                    graph.add_edge(parent, id, ExpressionOp::default());
-                })
-            }
-            Expr::Parens(ref expr) => {
-                let expr: Expression = expr.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(expr);
-                    graph.add_edge(parent, id, ExpressionParens::default());
-                })
-            }
-            Expr::Cond(ref cond) => {
-                let cond: Conditional = cond.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(cond);
-                    graph.add_edge(parent, id, ExpressionCond::default());
-                })
-            }
-        };
-        let span: Span = self.span.as_ref().clone();
         vec![
-            lambda,
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(span);
-                graph.add_edge(parent, id, ExpressionSpan::default());
-            }),
+            match self.kind.as_ref() {
+                Expr::Var(ref ident) => {
+                    build_typed_child_lambda::<_,ExpressionVar>(ident)
+                }
+                Expr::Num(ref num) => {
+                    build_typed_child_lambda::<_,ExpressionNum>(num)
+                }
+                Expr::Template(ref template) => {
+                    build_typed_child_lambda::<_,ExpressionTemplate>(template)
+                }
+                Expr::Invoke(ref invoke) => {
+                    build_typed_child_lambda::<_,ExpressionInvoke>(invoke)
+                }
+                Expr::Op(ref op) => {
+                    build_typed_child_lambda::<_,ExpressionOp>(op)
+                }
+                Expr::Parens(ref expr) => {
+                    build_typed_child_lambda::<_,ExpressionParens>(expr)
+                }
+                Expr::Cond(ref cond) => {
+                    build_typed_child_lambda::<_,ExpressionCond>(cond)
+                }
+            },
+            build_typed_child_lambda::<_,ExpressionSpan>(&self.span),
         ]
     }
 }

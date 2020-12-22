@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_data_child_lambda},
     parser::span::{Span, Spanner},
 };
 
@@ -37,13 +37,7 @@ impl EdgeTrait for IdentSpanEdge {
 
 impl NodeTrait for Ident {
     fn children(&self) -> Vec<ChildLambda> {
-        let arg = self.span.clone();
-        let lambda = Box::new(move |graph: &mut Graph, parent: NodeIndex| {
-            let id = graph.build_from_root(arg);
-            graph.add_edge(parent, id, IdentSpanEdge);
-        });
-
-        vec![lambda]
+        vec![build_data_child_lambda(&self.span,IdentSpanEdge::default())]
     }
 }
 

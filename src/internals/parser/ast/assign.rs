@@ -1,5 +1,5 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
     parser::{
         ast::{expr::Expression, ident::Ident, kind::Kind},
         span::{Span, Spanner},
@@ -48,33 +48,12 @@ impl EdgeTrait for AssignSpan {
 
 impl NodeTrait for Assign {
     fn children(&self) -> Vec<ChildLambda> {
-        let name: Ident = self.name.as_ref().clone();
-        let expr: Expression = self.expr.as_ref().clone();
-        let span: Span = self.span.as_ref().clone();
-        let mut v: Vec<ChildLambda> = vec![
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(name);
-                graph.add_edge(parent, id, AssignIdent::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(expr);
-                graph.add_edge(parent, id, AssignExpr::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(span);
-                graph.add_edge(parent, id, AssignSpan::default());
-            }),
+        let mut v = vec![
+            build_typed_child_lambda::<_,AssignSpan>(&self.span),
+            build_typed_child_lambda::<_,AssignExpr>(&self.expr),
+            build_typed_child_lambda::<_,AssignIdent>(&self.name),
         ];
-        match self.kind.as_ref() {
-            &Option::None => {}
-            &Option::Some(ref kind) => {
-                let kind: Kind = kind.clone();
-                v.push(Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(kind);
-                    graph.add_edge(parent, id, AssignKind::default());
-                }))
-            }
-        };
+        v.extend(self.kind.as_ref().clone().into_iter().map(|kind| build_data_child_lambda(&kind, AssignKind::default())));
         v
     }
 }

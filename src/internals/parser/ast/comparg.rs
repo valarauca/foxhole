@@ -1,5 +1,5 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
     parser::{
         ast::{ident::Ident, kind::Kind, op::Op, template::Template},
         span::{Span, Spanner},
@@ -63,43 +63,23 @@ impl EdgeTrait for CompFuncArgOp {
 
 impl NodeTrait for CompositionalFunctionArg {
     fn children(&self) -> Vec<ChildLambda> {
-        let span: Span = self.span.as_ref().clone();
-        let mut v: Vec<ChildLambda> = vec![Box::new(move |graph, parent| {
-            let id = graph.build_from_root(span);
-            graph.add_edge(parent, id, CompFuncArgSpan::default());
-        })];
-        let lambda: ChildLambda = match &self.arg {
-            CompositionalArg::Primative(ref prim) => {
-                let span: Span = prim.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(span);
-                    graph.add_edge(parent, id, CompFuncArgPrim::default());
-                })
-            }
-            CompositionalArg::Template(ref template) => {
-                let template: Template = template.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(template);
-                    graph.add_edge(parent, id, CompFuncArgTemplate::default());
-                })
-            }
-            CompositionalArg::Func(ref func) => {
-                let ident: Ident = func.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(ident);
-                    graph.add_edge(parent, id, CompFuncArgIdent::default());
-                })
-            }
-            CompositionalArg::Op(ref op) => {
-                let op: Op = op.as_ref().clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(op);
-                    graph.add_edge(parent, id, CompFuncArgOp::default());
-                })
-            }
-        };
-        v.push(lambda);
-        v
+        vec![
+            build_typed_child_lambda::<_,CompFuncArgSpan>(&self.span),
+            match &self.arg {
+                CompositionalArg::Primative(ref prim) => {
+                    build_typed_child_lambda::<_,CompFuncArgPrim>(prim)
+                }
+                CompositionalArg::Template(ref template) => {
+                    build_typed_child_lambda::<_,CompFuncArgTemplate>(template)
+                }
+                CompositionalArg::Func(ref func) => {
+                    build_typed_child_lambda::<_,CompFuncArgIdent>(func)
+                }
+                CompositionalArg::Op(ref op) => {
+                    build_typed_child_lambda::<_,CompFuncArgOp>(op)
+                }
+            },
+        ]
     }
 }
 
@@ -200,37 +180,13 @@ impl EdgeTrait for CompositionalNullArg {
 
 impl NodeTrait for CompositionalFunction {
     fn children(&self) -> Vec<ChildLambda> {
-        let name: Ident = self.name.as_ref().clone();
-        let null_arg: CompositionalFunctionArg = self.null_arg.as_ref().clone();
-        let single_arg: CompositionalFunctionArg = self.single_arg.as_ref().clone();
-        let collection_arg: CompositionalFunctionArg = self.collection_arg.as_ref().clone();
-        let ret: Kind = self.ret.as_ref().clone();
-        let span: Span = self.span.as_ref().clone();
         vec![
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(name);
-                graph.add_edge(parent, id, CompositionalFunctionName::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(ret);
-                graph.add_edge(parent, id, CompositionalFunctionReturnType::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(span);
-                graph.add_edge(parent, id, CompositionalFunctionSpan::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(collection_arg);
-                graph.add_edge(parent, id, CompositionalCollectionArg::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(single_arg);
-                graph.add_edge(parent, id, CompositionalSingleArg::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(null_arg);
-                graph.add_edge(parent, id, CompositionalNullArg::default());
-            }),
+            build_typed_child_lambda::<_,CompositionalFunctionName>(&self.name),
+            build_typed_child_lambda::<_,CompositionalFunctionReturnType>(&self.ret),
+            build_typed_child_lambda::<_,CompositionalFunctionSpan>(&self.span),
+            build_typed_child_lambda::<_,CompositionalNullArg>(&self.null_arg),
+            build_typed_child_lambda::<_,CompositionalSingleArg>(&self.single_arg),
+            build_typed_child_lambda::<_,CompositionalCollectionArg>(&self.collection_arg),
         ]
     }
 }

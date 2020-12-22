@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
     parser::{
         ast::ident::Ident,
         span::{Span, Spanner},
@@ -41,28 +41,11 @@ impl EdgeTrait for TemplateBehaviorEdge {
 
 impl NodeTrait for Template {
     fn children(&self) -> Vec<ChildLambda> {
-        let span: Span = self.span.as_ref().clone();
-        let ident: Ident = self.ident.as_ref().clone();
-        let mut v: Vec<ChildLambda> = vec![
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(span);
-                graph.add_edge(parent, id, TemplateSpan::default());
-            }),
-            Box::new(move |graph, parent| {
-                let id = graph.build_from_root(ident);
-                graph.add_edge(parent, id, TemplateIdent::default());
-            }),
+        let mut v = vec![
+            build_typed_child_lambda::<_,TemplateSpan>(&self.span),
+            build_typed_child_lambda::<_,TemplateIdent>(&self.ident),
         ];
-        match &self.behavior {
-            Option::None => {}
-            Option::Some(ref oh_behave) => {
-                let behavior: TemplateBehavior = oh_behave.clone();
-                v.push(Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(behavior);
-                    graph.add_edge(parent, id, TemplateBehaviorEdge::default());
-                }));
-            }
-        };
+        v.extend(self.behavior.clone().into_iter().map(|arg| build_data_child_lambda(&arg, TemplateBehaviorEdge::default())));
         v
     }
 }
@@ -137,23 +120,16 @@ impl EdgeTrait for TemplateBehaviorAssign {
 
 impl NodeTrait for TemplateBehavior {
     fn children(&self) -> Vec<ChildLambda> {
-        let lambda: ChildLambda = match self {
-            &TemplateBehavior::Fallback(ref fallback) => {
-                let fallback: TemplateFallback = fallback.clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(fallback);
-                    graph.add_edge(parent, id, TemplateBehaviorFallback::default());
-                })
+        vec![
+            match self {
+                &TemplateBehavior::Fallback(ref fallback) => {
+                    build_data_child_lambda(fallback, TemplateBehaviorFallback::default())
+                }
+                &TemplateBehavior::Assign(ref assign) => {
+                    build_data_child_lambda(assign, TemplateBehaviorAssign::default())
+                }
             }
-            &TemplateBehavior::Assign(ref assign) => {
-                let assign: TemplateFallback = assign.clone();
-                Box::new(move |graph, parent| {
-                    let id = graph.build_from_root(assign);
-                    graph.add_edge(parent, id, TemplateBehaviorAssign::default());
-                })
-            }
-        };
-        vec![lambda]
+        ]
     }
 }
 
