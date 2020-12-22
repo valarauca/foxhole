@@ -1,12 +1,12 @@
+use crate::internals::{
+    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait},
+    parser::{
+        span::{Span,Spanner},
+        ast::{func::FunctionDec, expr::Expression, comparg::CompositionalFunction, assign::Assign},
+    },
+};
+
 use serde::{Deserialize, Serialize};
-
-use crate::internals::parser::ast::assign::Assign;
-use crate::internals::parser::ast::comparg::CompositionalFunction;
-use crate::internals::parser::ast::expr::Expression;
-use crate::internals::parser::ast::func::FunctionDec;
-use crate::internals::parser::span::{Span, Spanner};
-
-use crate::internals::canonization::graph::NodeTrait;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Statement {
@@ -14,7 +14,84 @@ pub struct Statement {
     pub span: Box<Span>,
 }
 
-impl NodeTrait for Statement {}
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct StatementSpan;
+
+impl EdgeTrait for StatementSpan {
+    type N = Span;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct StatementAssign;
+
+impl EdgeTrait for StatementAssign {
+    type N = Assign;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct StatementFuncDec;
+
+impl EdgeTrait for StatementFuncDec {
+    type N = FunctionDec;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct StatementCompFuncDec;
+
+impl EdgeTrait for StatementCompFuncDec {
+    type N = CompositionalFunction;
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct StatementExpr;
+
+impl EdgeTrait for StatementExpr {
+    type N = Expression;
+}
+
+
+impl NodeTrait for Statement {
+    fn children(&self) -> Vec<ChildLambda> {
+        let span: Span = self.span.as_ref().clone();
+        let mut v: Vec<ChildLambda> = vec![Box::new(move |graph,parent| {
+            let id = graph.build_from_root(span);
+            graph.add_edge(parent, id, StatementSpan::default());
+        })];
+        let lambda: ChildLambda = match self.sttm.as_ref() {
+            State::Declaration(ref assign) => {
+                let assign: Assign = assign.as_ref().clone();
+                Box::new(move |graph, parent| {
+                    let id = graph.build_from_root(assign);
+                    graph.add_edge(parent, id, StatementAssign::default());
+                })
+            },
+            State::Func(ref func) => {
+                let func: FunctionDec = func.as_ref().clone();
+                Box::new(move |graph, parent| {
+                    let id = graph.build_from_root(func);
+                    graph.add_edge(parent, id, StatementAssign::default());
+                })
+            },
+            State::CompFunc(ref comp_func) => {
+                let comp_func: CompositionalFunction = comp_func.as_ref().clone();
+                Box::new(move |graph, parent| {
+                    let id = graph.build_from_root(comp_func);
+                    graph.add_edge(parent, id, StatementCompFuncDec::default());
+                })
+            },
+            State::Termination(ref term) => {
+                let term: Expression = term.as_ref().clone();
+                Box::new(move |graph, parent| {
+                    let id = graph.build_from_root(term);
+                    graph.add_edge(parent, id, StatementExpr::default());
+                })
+            },
+        };
+        v.push(lambda);
+        v
+    }
+}
+
 
 impl AsRef<Span> for Statement {
     fn as_ref(&self) -> &Span {
