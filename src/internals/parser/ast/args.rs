@@ -69,8 +69,4 @@ impl AsRef<Span> for FunctionArg {
     }
 }
 impl Spanner for FunctionArg {
-    fn fields(&self) {
-        self.set_id();
-        self.name.fields();
-    }
 }

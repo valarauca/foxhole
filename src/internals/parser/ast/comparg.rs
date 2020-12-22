@@ -110,15 +110,6 @@ impl AsRef<Span> for CompositionalFunctionArg {
     }
 }
 impl Spanner for CompositionalFunctionArg {
-    fn fields(&self) {
-        self.set_id();
-        match &self.arg {
-            CompositionalArg::Primative(ref a) => a.set_id(),
-            CompositionalArg::Template(ref b) => b.fields(),
-            CompositionalArg::Func(ref c) => c.fields(),
-            _ => {}
-        };
-    }
 }
 
 /// Declaring a compositional function
@@ -197,13 +188,6 @@ impl AsRef<Span> for CompositionalFunction {
     }
 }
 impl Spanner for CompositionalFunction {
-    fn fields(&self) {
-        self.set_id();
-        self.name.fields();
-        self.null_arg.fields();
-        self.single_arg.fields();
-        self.collection_arg.fields();
-    }
 }
 impl CompositionalFunction {
     pub(in crate::internals::parser) fn new<S>(

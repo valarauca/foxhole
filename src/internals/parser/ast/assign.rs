@@ -65,11 +65,6 @@ impl AsRef<Span> for Assign {
 }
 
 impl Spanner for Assign {
-    fn fields(&self) {
-        self.set_id();
-        self.name.fields();
-        self.expr.fields();
-    }
 }
 
 impl Assign {

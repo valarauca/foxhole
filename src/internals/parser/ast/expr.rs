@@ -112,18 +112,6 @@ impl AsRef<Span> for Expression {
     }
 }
 impl Spanner for Expression {
-    fn fields(&self) {
-        self.set_id();
-        match self.kind.as_ref() {
-            &Expr::Var(ref a) => a.fields(),
-            &Expr::Num(ref b) => b.fields(),
-            &Expr::Template(ref c) => c.fields(),
-            &Expr::Invoke(ref d) => d.fields(),
-            &Expr::Op(ref e) => e.fields(),
-            &Expr::Parens(ref f) => f.fields(),
-            &Expr::Cond(ref g) => g.fields(),
-        }
-    }
 }
 
 /// Expr stores the internal information about the expression.

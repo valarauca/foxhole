@@ -65,12 +65,6 @@ impl AsRef<Span> for Conditional {
     }
 }
 impl Spanner for Conditional {
-    fn fields(&self) {
-        self.set_id();
-        self.condition.fields();
-        self.true_case.fields();
-        self.false_case.fields();
-    }
 }
 
 impl Conditional {

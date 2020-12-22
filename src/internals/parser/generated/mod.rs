@@ -40,13 +40,7 @@ pub fn serialize_ast(source: &[Statement]) -> Result<String, String> {
 #[allow(dead_code)]
 pub fn deserialize_ast(source: &str) -> Result<Vec<Statement>, String> {
     match serde_json::from_str::<Vec<Statement>>(source) {
-        Ok(arg) => {
-            for item in arg.iter() {
-                // initialize global ID tracking
-                item.fields();
-            }
-            Ok(arg)
-        }
+        Ok(arg) => Ok(arg),
         Err(e) => Err(format!("{:?}", e)),
     }
 }

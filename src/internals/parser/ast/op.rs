@@ -65,11 +65,6 @@ impl AsRef<Span> for Operation {
 }
 
 impl Spanner for Operation {
-    fn fields(&self) {
-        self.set_id();
-        self.left.fields();
-        self.right.fields();
-    }
 }
 
 impl Operation {

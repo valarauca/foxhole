@@ -74,24 +74,6 @@ impl AsRef<Span> for Template {
 }
 
 impl Spanner for Template {
-    fn fields<'a>(&'a self) {
-        self.set_id();
-        self.ident.fields();
-        match &self.behavior {
-            &Option::None => {}
-            &Option::Some(TemplateBehavior::Fallback(ref x))
-            | &Option::Some(TemplateBehavior::Assign(ref x)) => {
-                match x {
-                    TemplateFallback::Num(ref span) => {
-                        span.set_id();
-                    }
-                    TemplateFallback::Template(ref temp) => {
-                        temp.fields();
-                    }
-                };
-            }
-        };
-    }
 }
 
 /// TemplateBehavior defines fallback behavior

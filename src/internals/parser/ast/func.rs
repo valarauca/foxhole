@@ -104,13 +104,4 @@ impl AsRef<Span> for FunctionDec {
     }
 }
 impl Spanner for FunctionDec {
-    fn fields(&self) {
-        self.set_id();
-        for arg in self.args.iter() {
-            arg.fields();
-        }
-        for state in self.body.iter() {
-            state.fields();
-        }
-    }
 }

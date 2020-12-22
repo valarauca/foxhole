@@ -9,10 +9,8 @@ use lrpar::{Lexeme, Lexer, NonStreamingLexer};
 use num_traits::{PrimInt, Unsigned};
 use try_from::TryFrom;
 
-use super::Id;
-
 /// Span contains information about where some text lies within the pre-parse structure
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize,PartialEq,Eq,PartialOrd,Ord,Hash)]
 pub struct Span {
     // the source code line the span starts on
     start_line: u32,
@@ -26,41 +24,10 @@ pub struct Span {
     start_byte: u32,
     // the byte index of the source this token ends on
     end_byte: u32,
-    // identifier is used to uniquely id this element.
-    identifier: Id,
     // the parsed text itself
     token: String,
     // the line(s) (if it spans multiple lines) that contain this value.
     surrounding_lines: String,
-}
-
-impl PartialEq for Span {
-    #[inline]
-    fn eq(&self, other: &Self) -> bool {
-        self.identifier.eq(&other.identifier)
-    }
-}
-impl Eq for Span {}
-impl PartialOrd for Span {
-    #[inline]
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.identifier.partial_cmp(&other.identifier)
-    }
-}
-impl Ord for Span {
-    #[inline]
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.identifier.cmp(&other.identifier)
-    }
-}
-impl std::hash::Hash for Span {
-    #[inline]
-    fn hash<H>(&self, hasher: &mut H)
-    where
-        H: std::hash::Hasher,
-    {
-        self.identifier.hash(hasher);
-    }
 }
 
 impl Span {
@@ -94,7 +61,6 @@ impl Span {
         let ((start_line, start_column), (end_line, end_column)) = l.line_col(span.clone());
         let start_byte = span.start();
         let end_byte = span.end();
-        let identifier = Id::default();
         Ok(Span {
             start_line: start_line as u32,
             end_line: end_line as u32,
@@ -104,7 +70,6 @@ impl Span {
             end_byte: end_byte as u32,
             token,
             surrounding_lines,
-            identifier,
         })
     }
 
@@ -235,21 +200,5 @@ pub trait Spanner: AsRef<Span> {
     /// is contained within.
     fn get_surrounding_lines<'a>(&'a self) -> &'a str {
         &self.as_ref().surrounding_lines
-    }
-
-    /// returns the unique id for this span
-    fn get_id(&self) -> Id {
-        self.as_ref().identifier
-    }
-
-    /// pushes items into sub-structures. This is used for setting global
-    /// state when loading a serialized AST.
-    fn fields(&self) {
-        self.set_id();
-    }
-
-    /// handle global id side effects
-    fn set_id(&self) {
-        self.get_id().set_id();
     }
 }

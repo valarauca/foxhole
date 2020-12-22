@@ -80,15 +80,6 @@ impl AsRef<Span> for Statement {
 }
 
 impl Spanner for Statement {
-    fn fields(&self) {
-        self.set_id();
-        match self.sttm.as_ref() {
-            State::Declaration(ref assign) => assign.fields(),
-            State::Func(ref func) => func.fields(),
-            State::CompFunc(ref comp) => comp.fields(),
-            State::Termination(ref expr) => expr.fields(),
-        }
-    }
 }
 
 impl Statement {

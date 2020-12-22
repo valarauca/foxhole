@@ -57,13 +57,6 @@ impl AsRef<Span> for Invoke {
     }
 }
 impl Spanner for Invoke {
-    fn fields(&self) {
-        self.set_id();
-        self.name.fields();
-        for arg in self.args.as_ref().iter() {
-            arg.fields();
-        }
-    }
 }
 
 impl Invoke {

@@ -23,9 +23,6 @@ impl AsRef<Span> for Ident {
     }
 }
 impl Spanner for Ident {
-    fn fields(&self) {
-        self.set_id();
-    }
 }
 
 #[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
