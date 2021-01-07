@@ -1,8 +1,12 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
+    canonization::graph::{
+        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
+    },
     parser::{
-        span::{Span,Spanner},
-        ast::{func::FunctionDec, expr::Expression, comparg::CompositionalFunction, assign::Assign},
+        ast::{
+            assign::Assign, comparg::CompositionalFunction, expr::Expression, func::FunctionDec,
+        },
+        span::{Span, Spanner},
     },
 };
 
@@ -49,29 +53,23 @@ impl EdgeTrait for StatementExpr {
     type N = Expression;
 }
 
-
 impl NodeTrait for Statement {
     fn children(&self) -> Vec<ChildLambda> {
-        let mut v = vec![build_typed_child_lambda::<_,StatementSpan>(&self.span)];
+        let mut v = vec![build_typed_child_lambda::<_, StatementSpan>(&self.span)];
         let lambda = match self.sttm.as_ref() {
             State::Declaration(ref assign) => {
-                build_typed_child_lambda::<_,StatementAssign>(assign)
-            },
-            State::Func(ref func) => {
-                build_typed_child_lambda::<_,StatementFuncDec>(func)
-            },
+                build_typed_child_lambda::<_, StatementAssign>(assign)
+            }
+            State::Func(ref func) => build_typed_child_lambda::<_, StatementFuncDec>(func),
             State::CompFunc(ref comp_func) => {
-                build_typed_child_lambda::<_,StatementCompFuncDec>(comp_func)
-            },
-            State::Termination(ref term) => {
-                build_typed_child_lambda::<_,StatementExpr>(term)
-            },
+                build_typed_child_lambda::<_, StatementCompFuncDec>(comp_func)
+            }
+            State::Termination(ref term) => build_typed_child_lambda::<_, StatementExpr>(term),
         };
         v.push(lambda);
         v
     }
 }
-
 
 impl AsRef<Span> for Statement {
     fn as_ref(&self) -> &Span {
@@ -79,8 +77,7 @@ impl AsRef<Span> for Statement {
     }
 }
 
-impl Spanner for Statement {
-}
+impl Spanner for Statement {}
 
 impl Statement {
     pub(in crate::internals::parser) fn new<I, S>(

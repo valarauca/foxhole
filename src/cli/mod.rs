@@ -1,4 +1,32 @@
-mod ast;
+use clap::App;
+
+mod ast_dump;
+use self::ast_dump::AstDump;
+
+mod traits;
+pub use self::traits::SubCommand;
+
+pub fn run() -> Result<(), String> {
+    let v: Vec<Box<dyn SubCommand>> = vec![Box::new(AstDump::default())];
+    let mut app: App<'static, 'static> = App::new("foxhole");
+
+    for item in v.iter() {
+        app = app.subcommand(item.build());
+    }
+
+    let args = app.get_matches();
+    for item in v.iter() {
+        let (name, args) = args.subcommand();
+        if name == item.name() {
+            let args = match args {
+                Option::None => return Err(format!("no arguments passed")),
+                Option::Some(args) => args,
+            };
+            return item.exec(args);
+        }
+    }
+    Err(format!("unrecongized command"))
+}
 
 const EOL: &'static str = {
     #[cfg(target_family = "unix")]

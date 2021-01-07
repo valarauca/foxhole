@@ -1,5 +1,7 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
+    canonization::graph::{
+        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::{ident::Ident, kind::Kind},
         span::{Span, Spanner},
@@ -40,9 +42,9 @@ impl EdgeTrait for FunctionArgSpan {
 impl NodeTrait for FunctionArg {
     fn children(&self) -> Vec<ChildLambda> {
         vec![
-            build_typed_child_lambda::<_,FunctionArgIdent>(&self.name),
-            build_typed_child_lambda::<_,FunctionArgKind>(&self.kind),
-            build_typed_child_lambda::<_,FunctionArgSpan>(&self.span),
+            build_typed_child_lambda::<_, FunctionArgIdent>(&self.name),
+            build_typed_child_lambda::<_, FunctionArgKind>(&self.kind),
+            build_typed_child_lambda::<_, FunctionArgSpan>(&self.span),
         ]
     }
 }
@@ -68,5 +70,4 @@ impl AsRef<Span> for FunctionArg {
         &self.span
     }
 }
-impl Spanner for FunctionArg {
-}
+impl Spanner for FunctionArg {}

@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
+    canonization::graph::{
+        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
+        Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::ident::Ident,
         span::{Span, Spanner},
@@ -42,10 +45,15 @@ impl EdgeTrait for TemplateBehaviorEdge {
 impl NodeTrait for Template {
     fn children(&self) -> Vec<ChildLambda> {
         let mut v = vec![
-            build_typed_child_lambda::<_,TemplateSpan>(&self.span),
-            build_typed_child_lambda::<_,TemplateIdent>(&self.ident),
+            build_typed_child_lambda::<_, TemplateSpan>(&self.span),
+            build_typed_child_lambda::<_, TemplateIdent>(&self.ident),
         ];
-        v.extend(self.behavior.clone().into_iter().map(|arg| build_data_child_lambda(&arg, TemplateBehaviorEdge::default())));
+        v.extend(
+            self.behavior
+                .clone()
+                .into_iter()
+                .map(|arg| build_data_child_lambda(&arg, TemplateBehaviorEdge::default())),
+        );
         v
     }
 }
@@ -73,8 +81,7 @@ impl AsRef<Span> for Template {
     }
 }
 
-impl Spanner for Template {
-}
+impl Spanner for Template {}
 
 /// TemplateBehavior defines fallback behavior
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -102,16 +109,14 @@ impl EdgeTrait for TemplateBehaviorAssign {
 
 impl NodeTrait for TemplateBehavior {
     fn children(&self) -> Vec<ChildLambda> {
-        vec![
-            match self {
-                &TemplateBehavior::Fallback(ref fallback) => {
-                    build_data_child_lambda(fallback, TemplateBehaviorFallback::default())
-                }
-                &TemplateBehavior::Assign(ref assign) => {
-                    build_data_child_lambda(assign, TemplateBehaviorAssign::default())
-                }
+        vec![match self {
+            &TemplateBehavior::Fallback(ref fallback) => {
+                build_data_child_lambda(fallback, TemplateBehaviorFallback::default())
             }
-        ]
+            &TemplateBehavior::Assign(ref assign) => {
+                build_data_child_lambda(assign, TemplateBehaviorAssign::default())
+            }
+        }]
     }
 }
 

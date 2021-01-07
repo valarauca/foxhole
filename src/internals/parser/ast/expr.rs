@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
+    canonization::graph::{
+        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::{
             condition::Conditional, ident::Ident, invoke::Invoke, op::Operation, template::Template,
@@ -79,29 +81,17 @@ impl NodeTrait for Expression {
     fn children(&self) -> Vec<ChildLambda> {
         vec![
             match self.kind.as_ref() {
-                Expr::Var(ref ident) => {
-                    build_typed_child_lambda::<_,ExpressionVar>(ident)
-                }
-                Expr::Num(ref num) => {
-                    build_typed_child_lambda::<_,ExpressionNum>(num)
-                }
+                Expr::Var(ref ident) => build_typed_child_lambda::<_, ExpressionVar>(ident),
+                Expr::Num(ref num) => build_typed_child_lambda::<_, ExpressionNum>(num),
                 Expr::Template(ref template) => {
-                    build_typed_child_lambda::<_,ExpressionTemplate>(template)
+                    build_typed_child_lambda::<_, ExpressionTemplate>(template)
                 }
-                Expr::Invoke(ref invoke) => {
-                    build_typed_child_lambda::<_,ExpressionInvoke>(invoke)
-                }
-                Expr::Op(ref op) => {
-                    build_typed_child_lambda::<_,ExpressionOp>(op)
-                }
-                Expr::Parens(ref expr) => {
-                    build_typed_child_lambda::<_,ExpressionParens>(expr)
-                }
-                Expr::Cond(ref cond) => {
-                    build_typed_child_lambda::<_,ExpressionCond>(cond)
-                }
+                Expr::Invoke(ref invoke) => build_typed_child_lambda::<_, ExpressionInvoke>(invoke),
+                Expr::Op(ref op) => build_typed_child_lambda::<_, ExpressionOp>(op),
+                Expr::Parens(ref expr) => build_typed_child_lambda::<_, ExpressionParens>(expr),
+                Expr::Cond(ref cond) => build_typed_child_lambda::<_, ExpressionCond>(cond),
             },
-            build_typed_child_lambda::<_,ExpressionSpan>(&self.span),
+            build_typed_child_lambda::<_, ExpressionSpan>(&self.span),
         ]
     }
 }
@@ -111,8 +101,7 @@ impl AsRef<Span> for Expression {
         &self.span
     }
 }
-impl Spanner for Expression {
-}
+impl Spanner for Expression {}
 
 /// Expr stores the internal information about the expression.
 /// more or less, what the expression is and what it is doing

@@ -1,5 +1,7 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
+    canonization::graph::{
+        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::{ident::Ident, kind::Kind, op::Op, template::Template},
         span::{Span, Spanner},
@@ -64,20 +66,18 @@ impl EdgeTrait for CompFuncArgOp {
 impl NodeTrait for CompositionalFunctionArg {
     fn children(&self) -> Vec<ChildLambda> {
         vec![
-            build_typed_child_lambda::<_,CompFuncArgSpan>(&self.span),
+            build_typed_child_lambda::<_, CompFuncArgSpan>(&self.span),
             match &self.arg {
                 CompositionalArg::Primative(ref prim) => {
-                    build_typed_child_lambda::<_,CompFuncArgPrim>(prim)
+                    build_typed_child_lambda::<_, CompFuncArgPrim>(prim)
                 }
                 CompositionalArg::Template(ref template) => {
-                    build_typed_child_lambda::<_,CompFuncArgTemplate>(template)
+                    build_typed_child_lambda::<_, CompFuncArgTemplate>(template)
                 }
                 CompositionalArg::Func(ref func) => {
-                    build_typed_child_lambda::<_,CompFuncArgIdent>(func)
+                    build_typed_child_lambda::<_, CompFuncArgIdent>(func)
                 }
-                CompositionalArg::Op(ref op) => {
-                    build_typed_child_lambda::<_,CompFuncArgOp>(op)
-                }
+                CompositionalArg::Op(ref op) => build_typed_child_lambda::<_, CompFuncArgOp>(op),
             },
         ]
     }
@@ -109,8 +109,7 @@ impl AsRef<Span> for CompositionalFunctionArg {
         &self.span
     }
 }
-impl Spanner for CompositionalFunctionArg {
-}
+impl Spanner for CompositionalFunctionArg {}
 
 /// Declaring a compositional function
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -172,12 +171,12 @@ impl EdgeTrait for CompositionalNullArg {
 impl NodeTrait for CompositionalFunction {
     fn children(&self) -> Vec<ChildLambda> {
         vec![
-            build_typed_child_lambda::<_,CompositionalFunctionName>(&self.name),
-            build_typed_child_lambda::<_,CompositionalFunctionReturnType>(&self.ret),
-            build_typed_child_lambda::<_,CompositionalFunctionSpan>(&self.span),
-            build_typed_child_lambda::<_,CompositionalNullArg>(&self.null_arg),
-            build_typed_child_lambda::<_,CompositionalSingleArg>(&self.single_arg),
-            build_typed_child_lambda::<_,CompositionalCollectionArg>(&self.collection_arg),
+            build_typed_child_lambda::<_, CompositionalFunctionName>(&self.name),
+            build_typed_child_lambda::<_, CompositionalFunctionReturnType>(&self.ret),
+            build_typed_child_lambda::<_, CompositionalFunctionSpan>(&self.span),
+            build_typed_child_lambda::<_, CompositionalNullArg>(&self.null_arg),
+            build_typed_child_lambda::<_, CompositionalSingleArg>(&self.single_arg),
+            build_typed_child_lambda::<_, CompositionalCollectionArg>(&self.collection_arg),
         ]
     }
 }
@@ -187,8 +186,7 @@ impl AsRef<Span> for CompositionalFunction {
         &self.span
     }
 }
-impl Spanner for CompositionalFunction {
-}
+impl Spanner for CompositionalFunction {}
 impl CompositionalFunction {
     pub(in crate::internals::parser) fn new<S>(
         name: Ident,

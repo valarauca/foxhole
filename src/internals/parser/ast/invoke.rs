@@ -1,5 +1,8 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
+    canonization::graph::{
+        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
+        Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::{expr::Expression, ident::Ident},
         span::{Span, Spanner},
@@ -41,12 +44,15 @@ impl EdgeTrait for InvokeArg {
 impl NodeTrait for Invoke {
     fn children(&self) -> Vec<ChildLambda> {
         let mut v = vec![
-            build_typed_child_lambda::<_,InvokeSpan>(&self.span),
-            build_typed_child_lambda::<_,InvokeIdent>(&self.name),
+            build_typed_child_lambda::<_, InvokeSpan>(&self.span),
+            build_typed_child_lambda::<_, InvokeIdent>(&self.name),
         ];
-        v.extend(self.args.iter()
-            .enumerate()
-            .map(|(pos,expr)| build_data_child_lambda(expr,InvokeArg(pos))));
+        v.extend(
+            self.args
+                .iter()
+                .enumerate()
+                .map(|(pos, expr)| build_data_child_lambda(expr, InvokeArg(pos))),
+        );
         v
     }
 }
@@ -56,8 +62,7 @@ impl AsRef<Span> for Invoke {
         &self.span
     }
 }
-impl Spanner for Invoke {
-}
+impl Spanner for Invoke {}
 
 impl Invoke {
     pub(in crate::internals::parser) fn new<I, F>(

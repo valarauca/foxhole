@@ -2,8 +2,6 @@
 
 use serde::{Deserialize, Serialize};
 
-
-
 /*
  * Useful macro for handling enums
  *
@@ -84,4 +82,3 @@ use crate::internals::parser::ast::op::Operation;
 use crate::internals::parser::ast::statement::{State, Statement};
 use crate::internals::parser::ast::template::Template;
 use crate::internals::parser::span::{Span, Spanner};
-

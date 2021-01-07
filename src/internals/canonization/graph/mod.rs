@@ -17,7 +17,7 @@ pub type ChildLambda = Box<dyn FnOnce(&mut Graph, NodeIndex)>;
 
 /// Handles some boilerplate of building a lambda function to insert nodes.
 /// In effect this operation is always identical. It always:
-/// 
+///
 /// 1. Inserts the `&N` argument,
 /// 2. links the "parent" with the new `&N` argument via `E`.
 ///
@@ -41,7 +41,7 @@ where
     })
 }
 
-pub fn build_typed_child_lambda<N,E>(node: &N) -> ChildLambda
+pub fn build_typed_child_lambda<N, E>(node: &N) -> ChildLambda
 where
     E: EdgeTrait + Default,
     <E as EdgeTrait>::N: Clone + Eq + NodeTrait,
@@ -53,7 +53,6 @@ where
         graph.add_edge(parent, id, <E as Default>::default())
     })
 }
-
 
 /// Top Level Graph Object.
 pub struct Graph {

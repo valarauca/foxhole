@@ -1,5 +1,4 @@
-use std::borrow::ToOwned;
-use std::hash::Hash;
+use std::{borrow::ToOwned, hash::Hash, str::from_utf8_unchecked};
 
 use serde::{Deserialize, Serialize};
 
@@ -10,7 +9,7 @@ use num_traits::{PrimInt, Unsigned};
 use try_from::TryFrom;
 
 /// Span contains information about where some text lies within the pre-parse structure
-#[derive(Clone, Debug, Serialize, Deserialize,PartialEq,Eq,PartialOrd,Ord,Hash)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
     // the source code line the span starts on
     start_line: u32,
@@ -24,6 +23,10 @@ pub struct Span {
     start_byte: u32,
     // the byte index of the source this token ends on
     end_byte: u32,
+    // how many bytes of 'surrounding_lines' precedes 'token'
+    prefix_length: u32,
+    // how many bytes of 'surrounding_lines' follows 'token'
+    suffix_length: u32,
     // the parsed text itself
     token: String,
     // the line(s) (if it spans multiple lines) that contain this value.
@@ -56,8 +59,26 @@ impl Span {
                 panic!("Span::new() invoked without a Lexeme or Span");
             }
         };
-        let token = l.span_str(span.clone()).to_owned();
-        let surrounding_lines = l.span_lines_str(span.clone()).to_owned();
+        let token_borrowed = l.span_str(span.clone());
+        let token_borrowed_start_address: usize = token_borrowed.as_ptr() as usize;
+        let token_borrowed_end_address: usize = token_borrowed_start_address + token_borrowed.len();
+
+        let surrounding_lines_borrowed = l.span_lines_str(span.clone());
+        let surrounding_lines_borrowed_start_address: usize =
+            surrounding_lines_borrowed.as_ptr() as usize;
+        let surrounding_lines_borrowed_end_address: usize =
+            surrounding_lines_borrowed_start_address + surrounding_lines_borrowed.len();
+
+        let prefix_length = token_borrowed_start_address - surrounding_lines_borrowed_start_address;
+        let suffix_length = surrounding_lines_borrowed_end_address - token_borrowed_end_address;
+
+        debug_assert!(
+            (prefix_length + suffix_length + token_borrowed.len())
+                == surrounding_lines_borrowed.len()
+        );
+
+        let token = token_borrowed.to_owned();
+        let surrounding_lines = surrounding_lines_borrowed.to_owned();
         let ((start_line, start_column), (end_line, end_column)) = l.line_col(span.clone());
         let start_byte = span.start();
         let end_byte = span.end();
@@ -68,6 +89,8 @@ impl Span {
             end_column: end_column as u32,
             start_byte: start_byte as u32,
             end_byte: end_byte as u32,
+            prefix_length: prefix_length as u32,
+            suffix_length: suffix_length as u32,
             token,
             surrounding_lines,
         })
@@ -181,6 +204,11 @@ pub trait Spanner: AsRef<Span> {
         self.as_ref().end_line as usize
     }
 
+    /// Is this span isolated to one line
+    fn is_one_line(&self) -> bool {
+        self.get_start_line() == self.get_end_line()
+    }
+
     /// returns the column number (within the line) that this span starts on.
     fn get_start_column(&self) -> usize {
         self.as_ref().start_column as usize
@@ -194,6 +222,30 @@ pub trait Spanner: AsRef<Span> {
     /// returns the underlying `str` representation of the input.
     fn get_span<'a>(&'a self) -> &'a str {
         &self.as_ref().token
+    }
+
+    /// returns how many bytes of `get_surrounding_lines` are a prefix to `token`
+    fn get_prefix_length(&self) -> usize {
+        self.as_ref().prefix_length as usize
+    }
+
+    /// returns how many bytes of `get_suffix_length` are a suffix to `token`
+    fn get_suffix_length(&self) -> usize {
+        self.as_ref().suffix_length as usize
+    }
+
+    /// returns the 3 parts of the span
+    fn get_prefix_token_suffix<'a>(&'a self) -> (&'a str, &'a str, &'a str) {
+        let chunk = self.get_surrounding_lines().as_bytes();
+        // this is unsafe, but this information was given by the parser
+        // so we'll implicitly trust it.
+        let token = self.get_span();
+        unsafe {
+            let prefix = from_utf8_unchecked(&chunk[0..self.get_prefix_length()]);
+            let skip = prefix.len() + token.len();
+            let suffix = from_utf8_unchecked(&chunk[skip..]);
+            (prefix, token, suffix)
+        }
     }
 
     /// returns the raw line(s) (multiple if "this span" crosses multiple lines) which "this span"

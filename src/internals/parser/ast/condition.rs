@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda},
+    canonization::graph::{
+        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::Expression,
         span::{Span, Spanner},
@@ -51,10 +53,10 @@ impl EdgeTrait for ConditionalSpan {
 impl NodeTrait for Conditional {
     fn children(&self) -> Vec<ChildLambda> {
         vec![
-            build_typed_child_lambda::<_,ConditionalCondition>(&self.condition),
-            build_typed_child_lambda::<_,ConditionalTrueCase>(&self.true_case),
-            build_typed_child_lambda::<_,ConditionalFalseCase>(&self.false_case),
-            build_typed_child_lambda::<_,ConditionalSpan>(&self.span),
+            build_typed_child_lambda::<_, ConditionalCondition>(&self.condition),
+            build_typed_child_lambda::<_, ConditionalTrueCase>(&self.true_case),
+            build_typed_child_lambda::<_, ConditionalFalseCase>(&self.false_case),
+            build_typed_child_lambda::<_, ConditionalSpan>(&self.span),
         ]
     }
 }
@@ -64,8 +66,7 @@ impl AsRef<Span> for Conditional {
         &self.span
     }
 }
-impl Spanner for Conditional {
-}
+impl Spanner for Conditional {}
 
 impl Conditional {
     pub(in crate::internals::parser) fn new<S>(

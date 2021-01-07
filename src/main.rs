@@ -6,5 +6,12 @@ mod cli;
 mod internals;
 
 fn main() {
-    println!("Hello, world!");
+    let rc = match cli::run() {
+        Ok(()) => 0i32,
+        Err(e) => {
+            eprint!("{}", e);
+            1i32
+        }
+    };
+    std::process::exit(rc);
 }

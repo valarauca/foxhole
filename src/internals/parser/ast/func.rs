@@ -1,5 +1,8 @@
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
+    canonization::graph::{
+        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
+        Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::{args::FunctionArg, ident::Ident, kind::Kind, statement::Statement},
         span::{Span, Spanner},
@@ -58,14 +61,21 @@ impl EdgeTrait for FunctionDecReturnType {
 impl NodeTrait for FunctionDec {
     fn children(&self) -> Vec<ChildLambda> {
         let mut v = vec![
-            build_typed_child_lambda::<_,FunctionDecReturnType>(&self.ret),
-            build_typed_child_lambda::<_,FunctionDecSpan>(&self.span),
-            build_typed_child_lambda::<_,FunctionDecName>(&self.name),
+            build_typed_child_lambda::<_, FunctionDecReturnType>(&self.ret),
+            build_typed_child_lambda::<_, FunctionDecSpan>(&self.span),
+            build_typed_child_lambda::<_, FunctionDecName>(&self.name),
         ];
         v.extend(
-            self.args.iter().enumerate().map(|(pos,arg)| build_data_child_lambda(arg,FunctionDecArgs(pos))));
+            self.args
+                .iter()
+                .enumerate()
+                .map(|(pos, arg)| build_data_child_lambda(arg, FunctionDecArgs(pos))),
+        );
         v.extend(
-            self.body.iter().enumerate().map(|(pos,statement)| build_data_child_lambda(statement, FunctionDecStatement(pos))));
+            self.body.iter().enumerate().map(|(pos, statement)| {
+                build_data_child_lambda(statement, FunctionDecStatement(pos))
+            }),
+        );
         v
     }
 }
@@ -103,5 +113,4 @@ impl AsRef<Span> for FunctionDec {
         &self.span
     }
 }
-impl Spanner for FunctionDec {
-}
+impl Spanner for FunctionDec {}

@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait, build_typed_child_lambda, build_data_child_lambda},
+    canonization::graph::{
+        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
+        Node, NodeIndex, NodeTrait,
+    },
     parser::{
         ast::Expression,
         span::{Span, Spanner},
@@ -50,9 +53,9 @@ impl EdgeTrait for OperationSpan {
 impl NodeTrait for Operation {
     fn children(&self) -> Vec<ChildLambda> {
         vec![
-            build_typed_child_lambda::<_,OperationRight>(&self.left),
-            build_typed_child_lambda::<_,OperationRight>(&self.right),
-            build_typed_child_lambda::<_,OperationSpan>(&self.span),
+            build_typed_child_lambda::<_, OperationRight>(&self.left),
+            build_typed_child_lambda::<_, OperationRight>(&self.right),
+            build_typed_child_lambda::<_, OperationSpan>(&self.span),
             build_data_child_lambda(&self.op, OperationOp::default()),
         ]
     }
@@ -64,8 +67,7 @@ impl AsRef<Span> for Operation {
     }
 }
 
-impl Spanner for Operation {
-}
+impl Spanner for Operation {}
 
 impl Operation {
     pub(in crate::internals::parser) fn new<F>(
