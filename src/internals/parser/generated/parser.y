@@ -1,4 +1,4 @@
-%start Body
+%start ProgramParser
 %left 'ADD'
 %left 'SUB'
 %left 'MUL'
@@ -14,7 +14,15 @@
 %left 'XOR'
 %%
 
-Body -> Result<Vec<Statement>,lrpar::Lexeme<u32>>:
+ProgramParser -> Result<Body,lrpar::Lexeme<u32>>:
+      SttmntsColl { Body::new($1?, Span::into($lexer,$span)) }; 
+
+/*
+ * Statement handling
+ *
+ */ 
+
+SttmntsColl -> Result<Vec<Statement>,lrpar::Lexeme<u32>>:
       Sttmnts Term { {let mut v = $1?; v.push($2?); Ok(v)} }
     | Term         { Ok(vec![$1?]) };
 
@@ -89,7 +97,7 @@ DecFuncArgs -> Result<Vec<FunctionArg>,lrpar::Lexeme<u32>>:
     | 'LPAR' FuncArgDecList 'RPAR' { Ok($2?) };
 
 DecFunc -> Result<FunctionDec,lrpar::Lexeme<u32>>:
-    'FN' Identifier DecFuncArgs TypeInfo 'RBRACE' Body 'LBRACE' { FunctionDec::new($2?,$3?,$6?,$4?,Span::into($lexer,$span)) };
+    'FN' Identifier DecFuncArgs TypeInfo 'RBRACE' SttmntsColl 'LBRACE' { FunctionDec::new($2?,$3?,$6?,$4?,Span::into($lexer,$span)) };
 
 /*
  * Invoking Functions
@@ -170,5 +178,5 @@ use crate::internals::parser::ast::expr::{Expression};
 use crate::internals::parser::ast::template::{Template,TemplateBehavior};
 use crate::internals::parser::ast::assign::{Assign};
 use crate::internals::parser::ast::op::{Op,Operation};
-use crate::internals::parser::ast::statement::{Statement};
+use crate::internals::parser::ast::statement::{Statement,Body};
 use crate::internals::parser::ast::condition::{Conditional};

@@ -1,6 +1,7 @@
 use crate::internals::{
     canonization::graph::{
-        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
+        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
+        Node, NodeIndex, NodeTrait,
     },
     parser::{
         ast::{
@@ -11,6 +12,50 @@ use crate::internals::{
 };
 
 use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct Body {
+    pub body: Vec<Statement>,
+    pub span: Box<Span>,
+}
+
+impl AsRef<Span> for Body {
+    fn as_ref(&self) -> &Span {
+        &self.span
+    }
+}
+
+impl Spanner for Body {}
+
+impl Body {
+    pub(in crate::internals::parser) fn new<S>(
+        body: Vec<Statement>,
+        span: S,
+    ) -> Result<Self, lrpar::Lexeme<u32>>
+    where
+        S: FnOnce() -> Result<Span, lrpar::Lexeme<u32>>,
+    {
+        let span = Box::new(span()?);
+        Ok(Self { body, span })
+    }
+}
+
+#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct StatementNum(usize);
+
+impl EdgeTrait for StatementNum {
+    type N = Statement;
+}
+
+impl NodeTrait for Body {
+    fn children(&self) -> Vec<ChildLambda> {
+        self.body
+            .iter()
+            .enumerate()
+            .map(|(pos, statement)| build_data_child_lambda(statement, StatementNum(pos)))
+            .collect()
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Statement {

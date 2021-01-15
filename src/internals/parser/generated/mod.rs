@@ -5,7 +5,7 @@ use lrpar::{LexParseError, Lexeme, NonStreamingLexer};
 use num_traits::{PrimInt, Unsigned};
 use try_from::TryFrom;
 
-use crate::internals::parser::ast::statement::Statement;
+use crate::internals::parser::ast::statement::Body;
 use crate::internals::parser::span::{Span, Spanner};
 use crate::internals::parser::traits::SyntaxError;
 
@@ -16,7 +16,7 @@ pub use self::parser::parser_y::{parse, token_epp};
 
 /// master function for parsing source code
 #[allow(dead_code)]
-pub fn parse_code<E>(source: &str) -> Result<Vec<Statement>, Vec<E>>
+pub fn parse_code<E>(source: &str) -> Result<Body, Vec<E>>
 where
     E: SyntaxError,
 {
@@ -29,7 +29,7 @@ where
 
 /// master function for serializing source code
 #[allow(dead_code)]
-pub fn serialize_ast(source: &[Statement]) -> Result<String, String> {
+pub fn serialize_ast(source: &Body) -> Result<String, String> {
     match serde_json::to_string_pretty(source) {
         Ok(arg) => Ok(arg),
         Err(e) => Err(format!("{:?}", e)),
@@ -38,8 +38,8 @@ pub fn serialize_ast(source: &[Statement]) -> Result<String, String> {
 
 /// master deserialize function
 #[allow(dead_code)]
-pub fn deserialize_ast(source: &str) -> Result<Vec<Statement>, String> {
-    match serde_json::from_str::<Vec<Statement>>(source) {
+pub fn deserialize_ast(source: &str) -> Result<Body, String> {
+    match serde_json::from_str::<Body>(source) {
         Ok(arg) => Ok(arg),
         Err(e) => Err(format!("{:?}", e)),
     }
@@ -52,17 +52,14 @@ fn parse_source<'lexer, 'input, U, P, E>(
     source: &'input str,
     def2: &'lexer dyn NonStreamingLexer<'input, U>,
     parser: &P,
-) -> Result<Vec<Statement>, Vec<E>>
+) -> Result<Body, Vec<E>>
 where
     'input: 'lexer,
     E: SyntaxError,
     U: TryFrom<usize> + Eq + Copy + Unsigned + PrimInt + Hash + 'static,
     P: Fn(
         &'lexer dyn NonStreamingLexer<'input, U>,
-    ) -> (
-        Option<Result<Vec<Statement>, Lexeme<U>>>,
-        Vec<LexParseError<U>>,
-    ),
+    ) -> (Option<Result<Body, Lexeme<U>>>, Vec<LexParseError<U>>),
 {
     let (output, errors) = parser(def2);
 
@@ -82,7 +79,7 @@ where
         .collect();
 
     // extract a result
-    let mut return_value: Option<Vec<Statement>> = None;
+    let mut return_value: Option<Body> = None;
     match output {
         Option::Some(Err(lex)) => {
             let span = Span::new_panic(def2, lex);
@@ -109,14 +106,14 @@ where
 #[cfg(test)]
 mod test {
     use super::{lexerdef, parse};
-    use crate::internals::parser::ast::statement::Statement;
+    use crate::internals::parser::ast::statement::Body;
 
     const SAMPLES: &'static [&'static str] = &[
         include_str!("samples/example1.fx"),
         include_str!("samples/example2.fx"),
     ];
 
-    fn parse_text<'a>(text: &'a str) -> Option<Vec<Statement>> {
+    fn parse_text<'a>(text: &'a str) -> Option<Body> {
         let def = lexerdef();
         {
             match parse(&def.lexer(text)) {

@@ -1,5 +1,7 @@
 use std::any::Any;
 
+use serde::Serialize;
+
 use petgraph::{
     graph::{EdgeIndex as EdgeIdx, Graph as PetGraph, NodeIndex as NodeIdx},
     visit::EdgeRef,
@@ -55,6 +57,7 @@ where
 }
 
 /// Top Level Graph Object.
+#[derive(Default)]
 pub struct Graph {
     data: PetGraph<Node, Edge, Directed, u32>,
 }
