@@ -1,7 +1,4 @@
 use crate::internals::{
-    canonization::graph::{
-        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
-    },
     parser::{
         ast::{ident::Ident, kind::Kind, op::Op, template::Template},
         span::{Span, Spanner},
@@ -26,68 +23,6 @@ pub struct CompositionalFunctionArg {
     pub arg: CompositionalArg,
 
     pub span: Box<Span>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompFuncArgSpan;
-
-impl EdgeTrait for CompFuncArgSpan {
-    type N = Span;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompFuncArgPrim;
-
-impl EdgeTrait for CompFuncArgPrim {
-    type N = Span;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompFuncArgTemplate;
-
-impl EdgeTrait for CompFuncArgTemplate {
-    type N = Template;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompFuncArgIdent;
-
-impl EdgeTrait for CompFuncArgIdent {
-    type N = Ident;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompFuncArgOp;
-
-impl EdgeTrait for CompFuncArgOp {
-    type N = Op;
-}
-
-impl NodeTrait for CompositionalFunctionArg {
-    fn children(&self) -> Vec<ChildLambda> {
-        vec![
-            build_typed_child_lambda::<_, CompFuncArgSpan>(&self.span),
-            match &self.arg {
-                CompositionalArg::Primative(ref prim) => {
-                    build_typed_child_lambda::<_, CompFuncArgPrim>(prim)
-                }
-                CompositionalArg::Template(ref template) => {
-                    build_typed_child_lambda::<_, CompFuncArgTemplate>(template)
-                }
-                CompositionalArg::Func(ref func) => {
-                    build_typed_child_lambda::<_, CompFuncArgIdent>(func)
-                }
-                CompositionalArg::Op(ref op) => build_typed_child_lambda::<_, CompFuncArgOp>(op),
-            },
-        ]
-    }
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompositionalFunctionArgSpan;
-
-impl EdgeTrait for CompositionalFunctionArgSpan {
-    type N = Span;
 }
 
 impl CompositionalFunctionArg {
@@ -124,61 +59,6 @@ pub struct CompositionalFunction {
     pub ret: Box<Kind>,
 
     pub span: Box<Span>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompositionalFunctionName;
-
-impl EdgeTrait for CompositionalFunctionName {
-    type N = Ident;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompositionalFunctionReturnType;
-
-impl EdgeTrait for CompositionalFunctionReturnType {
-    type N = Kind;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompositionalFunctionSpan;
-
-impl EdgeTrait for CompositionalFunctionSpan {
-    type N = Span;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompositionalCollectionArg;
-
-impl EdgeTrait for CompositionalCollectionArg {
-    type N = CompositionalFunctionArg;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompositionalSingleArg;
-
-impl EdgeTrait for CompositionalSingleArg {
-    type N = CompositionalFunctionArg;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CompositionalNullArg;
-
-impl EdgeTrait for CompositionalNullArg {
-    type N = CompositionalFunctionArg;
-}
-
-impl NodeTrait for CompositionalFunction {
-    fn children(&self) -> Vec<ChildLambda> {
-        vec![
-            build_typed_child_lambda::<_, CompositionalFunctionName>(&self.name),
-            build_typed_child_lambda::<_, CompositionalFunctionReturnType>(&self.ret),
-            build_typed_child_lambda::<_, CompositionalFunctionSpan>(&self.span),
-            build_typed_child_lambda::<_, CompositionalNullArg>(&self.null_arg),
-            build_typed_child_lambda::<_, CompositionalSingleArg>(&self.single_arg),
-            build_typed_child_lambda::<_, CompositionalCollectionArg>(&self.collection_arg),
-        ]
-    }
 }
 
 impl AsRef<Span> for CompositionalFunction {

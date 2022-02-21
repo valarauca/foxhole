@@ -1,8 +1,4 @@
 use crate::internals::{
-    canonization::graph::{
-        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
-        Node, NodeIndex, NodeTrait,
-    },
     parser::{
         ast::{
             assign::Assign, comparg::CompositionalFunction, expr::Expression, func::FunctionDec,
@@ -40,80 +36,10 @@ impl Body {
     }
 }
 
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct StatementNum(usize);
-
-impl EdgeTrait for StatementNum {
-    type N = Statement;
-}
-
-impl NodeTrait for Body {
-    fn children(&self) -> Vec<ChildLambda> {
-        self.body
-            .iter()
-            .enumerate()
-            .map(|(pos, statement)| build_data_child_lambda(statement, StatementNum(pos)))
-            .collect()
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Statement {
     pub sttm: Box<State>,
     pub span: Box<Span>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct StatementSpan;
-
-impl EdgeTrait for StatementSpan {
-    type N = Span;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct StatementAssign;
-
-impl EdgeTrait for StatementAssign {
-    type N = Assign;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct StatementFuncDec;
-
-impl EdgeTrait for StatementFuncDec {
-    type N = FunctionDec;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct StatementCompFuncDec;
-
-impl EdgeTrait for StatementCompFuncDec {
-    type N = CompositionalFunction;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct StatementExpr;
-
-impl EdgeTrait for StatementExpr {
-    type N = Expression;
-}
-
-impl NodeTrait for Statement {
-    fn children(&self) -> Vec<ChildLambda> {
-        let mut v = vec![build_typed_child_lambda::<_, StatementSpan>(&self.span)];
-        let lambda = match self.sttm.as_ref() {
-            State::Declaration(ref assign) => {
-                build_typed_child_lambda::<_, StatementAssign>(assign)
-            }
-            State::Func(ref func) => build_typed_child_lambda::<_, StatementFuncDec>(func),
-            State::CompFunc(ref comp_func) => {
-                build_typed_child_lambda::<_, StatementCompFuncDec>(comp_func)
-            }
-            State::Termination(ref term) => build_typed_child_lambda::<_, StatementExpr>(term),
-        };
-        v.push(lambda);
-        v
-    }
 }
 
 impl AsRef<Span> for Statement {

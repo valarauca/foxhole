@@ -1,10 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{
-        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
-        Node, NodeIndex, NodeTrait,
-    },
     parser::{
         ast::Expression,
         span::{Span, Spanner},
@@ -20,45 +16,6 @@ pub struct Operation {
     pub right: Box<Expression>,
 
     pub span: Box<Span>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct OperationRight;
-
-impl EdgeTrait for OperationRight {
-    type N = Expression;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct OperationLeft;
-
-impl EdgeTrait for OperationLeft {
-    type N = Expression;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct OperationOp;
-
-impl EdgeTrait for OperationOp {
-    type N = Op;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct OperationSpan;
-
-impl EdgeTrait for OperationSpan {
-    type N = Span;
-}
-
-impl NodeTrait for Operation {
-    fn children(&self) -> Vec<ChildLambda> {
-        vec![
-            build_typed_child_lambda::<_, OperationRight>(&self.left),
-            build_typed_child_lambda::<_, OperationRight>(&self.right),
-            build_typed_child_lambda::<_, OperationSpan>(&self.span),
-            build_data_child_lambda(&self.op, OperationOp::default()),
-        ]
-    }
 }
 
 impl AsRef<Span> for Operation {
@@ -107,5 +64,3 @@ pub enum Op {
     OR,
     XOR,
 }
-
-impl NodeTrait for Op {}

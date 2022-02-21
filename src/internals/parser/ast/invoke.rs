@@ -1,8 +1,4 @@
 use crate::internals::{
-    canonization::graph::{
-        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
-        Node, NodeIndex, NodeTrait,
-    },
     parser::{
         ast::{expr::Expression, ident::Ident},
         span::{Span, Spanner},
@@ -18,43 +14,6 @@ pub struct Invoke {
     pub args: Box<[Expression]>,
 
     pub span: Box<Span>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct InvokeSpan;
-
-impl EdgeTrait for InvokeSpan {
-    type N = Span;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct InvokeIdent;
-
-impl EdgeTrait for InvokeIdent {
-    type N = Ident;
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct InvokeArg(usize);
-
-impl EdgeTrait for InvokeArg {
-    type N = Expression;
-}
-
-impl NodeTrait for Invoke {
-    fn children(&self) -> Vec<ChildLambda> {
-        let mut v = vec![
-            build_typed_child_lambda::<_, InvokeSpan>(&self.span),
-            build_typed_child_lambda::<_, InvokeIdent>(&self.name),
-        ];
-        v.extend(
-            self.args
-                .iter()
-                .enumerate()
-                .map(|(pos, expr)| build_data_child_lambda(expr, InvokeArg(pos))),
-        );
-        v
-    }
 }
 
 impl AsRef<Span> for Invoke {

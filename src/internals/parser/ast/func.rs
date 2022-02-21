@@ -1,8 +1,4 @@
 use crate::internals::{
-    canonization::graph::{
-        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
-        Node, NodeIndex, NodeTrait,
-    },
     parser::{
         ast::{args::FunctionArg, ident::Ident, kind::Kind, statement::Statement},
         span::{Span, Spanner},
@@ -21,63 +17,6 @@ pub struct FunctionDec {
 
     pub body: Vec<Statement>,
     pub ret: Box<Kind>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FunctionDecName;
-
-impl EdgeTrait for FunctionDecName {
-    type N = Ident;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FunctionDecSpan;
-
-impl EdgeTrait for FunctionDecSpan {
-    type N = Span;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FunctionDecArgs(usize);
-
-impl EdgeTrait for FunctionDecArgs {
-    type N = FunctionArg;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FunctionDecStatement(usize);
-
-impl EdgeTrait for FunctionDecStatement {
-    type N = Statement;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct FunctionDecReturnType;
-
-impl EdgeTrait for FunctionDecReturnType {
-    type N = Kind;
-}
-
-impl NodeTrait for FunctionDec {
-    fn children(&self) -> Vec<ChildLambda> {
-        let mut v = vec![
-            build_typed_child_lambda::<_, FunctionDecReturnType>(&self.ret),
-            build_typed_child_lambda::<_, FunctionDecSpan>(&self.span),
-            build_typed_child_lambda::<_, FunctionDecName>(&self.name),
-        ];
-        v.extend(
-            self.args
-                .iter()
-                .enumerate()
-                .map(|(pos, arg)| build_data_child_lambda(arg, FunctionDecArgs(pos))),
-        );
-        v.extend(
-            self.body.iter().enumerate().map(|(pos, statement)| {
-                build_data_child_lambda(statement, FunctionDecStatement(pos))
-            }),
-        );
-        v
-    }
 }
 
 impl FunctionDec {

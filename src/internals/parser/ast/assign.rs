@@ -1,8 +1,4 @@
 use crate::internals::{
-    canonization::graph::{
-        build_data_child_lambda, build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph,
-        Node, NodeIndex, NodeTrait,
-    },
     parser::{
         ast::{expr::Expression, ident::Ident, kind::Kind},
         span::{Span, Spanner},
@@ -19,52 +15,6 @@ pub struct Assign {
     pub kind: Box<Option<Kind>>,
 
     pub span: Box<Span>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct AssignIdent;
-
-impl EdgeTrait for AssignIdent {
-    type N = Ident;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct AssignKind;
-
-impl EdgeTrait for AssignKind {
-    type N = Kind;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct AssignExpr;
-
-impl EdgeTrait for AssignExpr {
-    type N = Expression;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct AssignSpan;
-
-impl EdgeTrait for AssignSpan {
-    type N = Span;
-}
-
-impl NodeTrait for Assign {
-    fn children(&self) -> Vec<ChildLambda> {
-        let mut v = vec![
-            build_typed_child_lambda::<_, AssignSpan>(&self.span),
-            build_typed_child_lambda::<_, AssignExpr>(&self.expr),
-            build_typed_child_lambda::<_, AssignIdent>(&self.name),
-        ];
-        v.extend(
-            self.kind
-                .as_ref()
-                .clone()
-                .into_iter()
-                .map(|kind| build_data_child_lambda(&kind, AssignKind::default())),
-        );
-        v
-    }
 }
 
 impl AsRef<Span> for Assign {

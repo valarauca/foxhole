@@ -1,9 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::graph::{
-        build_typed_child_lambda, ChildLambda, Edge, EdgeTrait, Graph, Node, NodeIndex, NodeTrait,
-    },
     parser::{
         ast::Expression,
         span::{Span, Spanner},
@@ -20,45 +17,6 @@ pub struct Conditional {
     pub false_case: Box<Expression>,
 
     pub span: Box<Span>,
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ConditionalCondition;
-
-impl EdgeTrait for ConditionalCondition {
-    type N = Expression;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ConditionalTrueCase;
-
-impl EdgeTrait for ConditionalTrueCase {
-    type N = Expression;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ConditionalFalseCase;
-
-impl EdgeTrait for ConditionalFalseCase {
-    type N = Expression;
-}
-
-#[derive(Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ConditionalSpan;
-
-impl EdgeTrait for ConditionalSpan {
-    type N = Span;
-}
-
-impl NodeTrait for Conditional {
-    fn children(&self) -> Vec<ChildLambda> {
-        vec![
-            build_typed_child_lambda::<_, ConditionalCondition>(&self.condition),
-            build_typed_child_lambda::<_, ConditionalTrueCase>(&self.true_case),
-            build_typed_child_lambda::<_, ConditionalFalseCase>(&self.false_case),
-            build_typed_child_lambda::<_, ConditionalSpan>(&self.span),
-        ]
-    }
 }
 
 impl AsRef<Span> for Conditional {
