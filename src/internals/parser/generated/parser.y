@@ -77,8 +77,10 @@ Cond -> Result<Conditional,lrpar::Lexeme<u32>>:
  */
 
 Assignment -> Result<Assign,lrpar::Lexeme<u32>>:
-      'LET' Identifier 'COLON' TypeInfo 'EQ' Expr { Assign::new($2?, $4?, $6?, Span::into($lexer,$span)) }
-    | 'LET' Identifier 'ASSIGN' Expr              { Assign::new($2?, None, $4?, Span::into($lexer,$span)) };
+      'CONST' Identifier 'COLON' TypeInfo 'EQ' Expr { Assign::new($2?, true, $4?, $6?, Span::into($lexer,$span)) }
+    | 'CONST' Identifier 'ASSIGN' Expr              { Assign::new($2?, true, None, $4?, Span::into($lexer,$span)) } 
+    | 'LET' Identifier 'COLON' TypeInfo 'EQ' Expr   { Assign::new($2?, false, $4?, $6?, Span::into($lexer,$span)) }
+    | 'LET' Identifier 'ASSIGN' Expr                { Assign::new($2?, false, None, $4?, Span::into($lexer,$span)) };
 
 /*
  * Declaring Functions

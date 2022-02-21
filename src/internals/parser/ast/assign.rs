@@ -13,6 +13,7 @@ pub struct Assign {
 
     pub expr: Box<Expression>,
     pub kind: Box<Option<Kind>>,
+    pub is_constant: bool,
 
     pub span: Box<Span>,
 }
@@ -28,6 +29,7 @@ impl Spanner for Assign {}
 impl Assign {
     pub(in crate::internals::parser) fn new<F, K>(
         name: Ident,
+        is_constant: bool,
         kind: K,
         expr: Expression,
         span: F,
@@ -41,6 +43,7 @@ impl Assign {
         let kind = Box::new(kind.into());
         let expr = Box::new(expr);
         Ok(Self {
+            is_constant,
             name,
             expr,
             kind,
