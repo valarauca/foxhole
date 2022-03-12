@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{Collection, CollectionTrait, Compositional, Function, Prim};
+use super::{Collection, CollectionTrait, Compositional, CompositionalTrait, Function, FunctionTrait, Prim};
 use crate::internals::parser::ast::args::FunctionArg;
 use crate::internals::parser::ast::comparg::CompositionalFunction;
 use crate::internals::parser::ast::func::FunctionDec;
@@ -127,8 +127,15 @@ impl<'temp> From<&'temp Box<FunctionArg>> for TypeData {
     }
 }
 
+#[derive(Clone,PartialEq,Eq,PartialOrd,Ord,Hash,Debug)]
+pub enum NonAbstractData<'a> {
+    Coll(&'a Collection),
+    Prim(&'a Prim),
+}
+
 /// Trait that encapsulates a lot of actions on the type system
 pub trait TypeDataTrait: AsRef<TypeData> + AsMut<TypeData> {
+
     fn is_none(&self) -> bool {
         match self.as_ref() {
             &TypeData::None => true,
@@ -182,6 +189,18 @@ pub trait TypeDataTrait: AsRef<TypeData> + AsMut<TypeData> {
      * Getter Methods
      *
      */
+
+    /// yields the return type of functions/compositional functions
+    /// otherwise it returns the interior type.
+    fn get_non_abstract_type<'a>(&'a self) -> Option<NonAbstractData<'a>> {
+        match self.as_ref() {
+            &TypeData::None => None,
+            &TypeData::Prim(ref p) => Some(NonAbstractData::Prim(p)),
+            &TypeData::Coll(ref c) => Some(NonAbstractData::Coll(c)),
+            &TypeData::Func(ref f) => f.get_return().get_non_abstract_type(),
+            &TypeData::Comp(ref c) => c.get_return().get_non_abstract_type(),
+        }
+    }
 
     fn get_coll<'a>(&'a self) -> Option<&'a Collection> {
         match self.as_ref() {

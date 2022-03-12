@@ -53,9 +53,9 @@ impl Integer {
             minimum: None,
             constant: None,
         };
-        value.set_constant(con);
         value.set_maximum(max);
         value.set_minimum(min);
+        value.set_constant(con);
         value
     }
 }
@@ -85,6 +85,18 @@ pub trait IntegerTrait: AsRef<Integer> {
     /// returns the constant value, if it exists
     fn get_constant(&self) -> Option<i64> {
         self.as_ref().constant.clone()
+    }
+
+    fn is_constant(&self) -> bool {
+        self.has_constant()
+            &&
+        self.has_minimum()
+            &&
+        self.has_maximum()
+            &&
+        self.get_minimum() == self.get_maximum()
+            &&
+        self.get_constant() == self.get_maximum()
     }
 
     /// returns if a constant value, is known.
@@ -231,6 +243,7 @@ fn trivial_integer_properities() {
      *
      */
     assert!(int.has_constant());
+    assert!(int.is_constant());
     assert_eq!(Option::Some(5i64), int.get_constant());
     assert!(int.has_maximum());
     assert_eq!(Option::Some(5i64), int.get_maximum());
@@ -248,6 +261,7 @@ fn trivial_integer_properities() {
 
     int.set_minimum(4);
     assert!(!int.has_constant());
+    assert!(!int.is_constant());
     assert_eq!(Option::None, int.get_constant());
     assert!(int.has_maximum());
     assert_eq!(Option::Some(5i64), int.get_maximum());

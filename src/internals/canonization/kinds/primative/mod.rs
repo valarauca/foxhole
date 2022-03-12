@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub mod int;
+pub mod boolean;
 #[doc(no_inline)]
 pub use self::int::{Integer, IntegerMutTrait, IntegerTrait};
 

@@ -9,9 +9,10 @@ use crate::internals::parser::ast::comparg::CompositionalFunction;
 /// a homo-morphism
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub struct Compositional {
-    identity: Function,
-    primative: Function,
-    collection: Function,
+    identity: Box<Function>,
+    primative: Box<Function>,
+    collection: Box<Function>,
+    return_type: Box<TypeData>,
 }
 
 impl AsRef<Compositional> for Compositional {
@@ -41,7 +42,13 @@ pub trait CompositionalTrait: AsRef<Compositional> {
     fn get_collection<'a>(&'a self) -> &'a Function {
         &self.as_ref().collection
     }
+
+    fn get_return<'a>(&'a self) -> &'a TypeData {
+        self.as_ref().primative.get_return()
+    }
 }
+
+impl CompositionalTrait for Compositional { }
 
 impl From<&CompositionalFunction> for Compositional {
     /// NOTE:
@@ -68,9 +75,10 @@ impl From<&CompositionalFunction> for Compositional {
             }
         };
         Self {
-            identity: Function::new(Option::<TypeData>::None, ret.clone()),
-            primative: Function::new(Some(ret.clone()), ret.clone()),
-            collection: Function::new(Some(coll), ret),
+            identity: Box::new(Function::new(Option::<TypeData>::None, ret.clone())),
+            primative: Box::new(Function::new(Some(ret.clone()), ret.clone())),
+            collection: Box::new(Function::new(Some(coll), ret)),
+            return_type: Box::new(TypeData::from(&arg.ret)),
         }
     }
 }
