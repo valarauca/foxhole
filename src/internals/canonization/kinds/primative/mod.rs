@@ -1,9 +1,16 @@
 use serde::{Deserialize, Serialize};
 
+use crate::internals::parser::ast::op::Op;
+
 pub mod int;
-pub mod boolean;
 #[doc(no_inline)]
 pub use self::int::{Integer, IntegerMutTrait, IntegerTrait};
+use self::int::{trinary_iib_op,trinary_iii_op};
+
+pub mod boolean;
+#[doc(no_inline)]
+pub use self::boolean::{Boolean, BooleanMutTrait, BooleanTrait};
+use self::boolean::{trinary_operations};
 
 /// Prim is a basic representation of a primative value.
 ///
@@ -12,7 +19,35 @@ pub use self::int::{Integer, IntegerMutTrait, IntegerTrait};
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
 pub enum Prim {
     Int(Integer),
-    Boolean,
+    Bool(Boolean),
+}
+
+/// calculates the resulting type (and bounds) for a trinary operation
+pub fn trinary_op<L,R>(l: &L, op: Op, r: &R) -> Result<Prim,()>
+where
+    L: PrimativeTrait,
+    R: PrimativeTrait,
+{
+    match (l.get_bool(), r.get_bool()) {
+        (Option::Some(l_bool), Option::Some(r_bool)) => {
+            return Ok(Prim::from(trinary_operations(l_bool, op, r_bool)?));
+        },
+        _ => { }
+    };
+    match (l.get_int(), r.get_int()) {
+        (Option::Some(l_int),Option::Some(r_int)) => {
+            match trinary_iii_op(l_int, op, r_int) {
+                Ok(i) => return Ok(Prim::from(i)),
+                _ => { }
+            };
+            match trinary_iii_op(l_int, op, r_int) {
+                Ok(b) => return Ok(Prim::from(b)),
+                _ => { }
+            }
+        },
+        _ => { }
+    };
+    Err(())
 }
 
 impl Prim {
@@ -20,8 +55,12 @@ impl Prim {
         Self::from(constant)
     }
 
+    pub fn new_boolean_constant(constant: bool) -> Self {
+        Self::from(Boolean::new_constant(constant))
+    }
+
     pub fn new_boolean() -> Self {
-        Self::Boolean
+        Self::from(Boolean::all_vals())
     }
 
     pub fn new_int_dynamic<Max, Min, Const>(max: Max, min: Min, con: Const) -> Self
@@ -35,6 +74,18 @@ impl Prim {
 
     pub fn new_idk_int() -> Self {
         Self::from(Integer::new(None, None, None))
+    }
+}
+
+impl From<bool> for Prim {
+    fn from(arg: bool) -> Self {
+        Self::Bool(Boolean::new_constant(arg))
+    }
+}
+
+impl From<Boolean> for Prim {
+    fn from(arg: Boolean) -> Self {
+        Self::Bool(arg)
     }
 }
 
@@ -83,6 +134,14 @@ pub trait PrimativeTrait: AsRef<Prim> {
             _ => None,
         }
     }
+
+    /// return a readable view of the boolean
+    fn get_bool<'a>(&'a self) -> Option<&'a Boolean> {
+        match self.as_ref() {
+            &Prim::Bool(ref b) => Some(b),
+            _ => None
+        }
+    }
 }
 
 /// For mutating the contents of this type
@@ -100,7 +159,7 @@ pub trait PrimativeMutTrait: AsMut<Prim> + AsRef<Prim> + PrimativeTrait {
         if self.is_bool() {
             return;
         }
-        std::mem::replace(self.as_mut(), Prim::Boolean);
+        std::mem::replace(self.as_mut(), Prim::new_boolean());
     }
 
     /// convert to a constant int

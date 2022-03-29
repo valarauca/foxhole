@@ -10,24 +10,90 @@ pub struct Boolean {
     constant: Option<bool>,
 }
 
-
+/// Propigates type information of a tinary (l op r) expression
+/// for boolean operations
 pub fn trinary_operations<L,R>(l: &L, op: Op, r: &R) -> Result<Boolean,()>
 where
     L: BooleanTrait,
     R: BooleanTrait,
 {
-    match op {
-        Op::ADD | Op::SUB | Op::MUL | Op::DIV => {
-            Err(())
-        }
-        Op::EQ => {
-            if l.is_constant() && r.is_constant() {
 
-            } else {
-            }
+    let operation = op_gen(op)?;
+
+    let l_const = l.get_constant();
+    let r_const = r.get_constant();
+
+    if l_const.is_some() && r_const.is_some() {
+        // simpliest case, both values are constant
+        Ok(Boolean::new_constant((operation)(l_const.unwrap(),r_const.unwrap())))
+    } else if ( l_const.is_some() && r.has_minimum() && r.has_maximum() ) ||
+        ( r_const.is_some() && l.has_minimum() && l.has_maximum()) {
+        // one value is constant
+        // AND
+        // the ther value is bounded
+    
+        let (con_val, min, max) = if l_const.is_some() {
+            (l_const.unwrap(), r.get_minimum().unwrap(), r.get_maximum().unwrap())
+        } else {
+            (r_const.unwrap(), l.get_minimum().unwrap(), l.get_maximum().unwrap())
+        };
+
+        let new_min = (operation)(con_val,min);
+        let new_max = (operation)(con_val,max);
+
+        if new_min == new_max {
+            Ok(Boolean::new_constant(new_min))
+        } else if new_min < new_max {
+            Ok(Boolean::new(new_max, new_min, None))
+        } else {
+            Ok(Boolean::new(new_min, new_max, None))
         }
+    } else if op == Op::OR && ( l_const == Option::Some(true) || r_const == Option::Some(true) ) {
+        // one value maybe unbounded but we're dealing with an '||' so we can still emit a
+        // constant and later trim the tree
+        Ok(Boolean::new_constant(true))
+    } else {
+        Ok(Boolean::new(None,None,None))
     }
 }
+
+
+
+// returns a function to compute the operation
+//
+// Boolean results are defined for
+// - eq
+// - ne
+// - and
+// - or
+// - xor
+fn op_gen(op: Op) -> Result<&'static (dyn Fn(bool,bool)->bool+'static),()> {
+    match op {
+        Op::EQ => {
+            fn eq(l: bool, r: bool) -> bool { l == r } 
+            Ok(&eq)
+        }
+        Op::NE => { 
+            fn ne(l: bool, r: bool) -> bool { l != r }
+            Ok(&ne)
+        }
+        Op::AND => {
+            fn and(l: bool, r: bool) -> bool { l && r }
+            Ok(&and)
+        }
+        Op::OR => {
+            fn or(l: bool, r: bool) -> bool { l || r }
+            Ok(&or)
+        }
+        Op::XOR => {
+            fn xor(l: bool, r: bool) -> bool { l ^ r }
+            Ok(&xor)
+        }
+        _ => { Err(()) }
+    }
+}
+
+
 
 impl AsRef<Boolean> for Boolean { 
     fn as_ref<'a>(&'a self) -> &'a Self { self }
@@ -39,6 +105,10 @@ impl AsMut<Boolean> for Boolean {
 impl Boolean {
     pub fn new_constant(value: bool) -> Self {
        Self { maximum: None, minimum: None, constant: Some(value) }
+    }
+
+    pub fn all_vals() -> Self {
+        Boolean::new(true, false, None)
     }
 
     pub fn new<Max, Min, Const>(max: Max, min: Min, con: Const) -> Self
@@ -191,3 +261,24 @@ pub trait BooleanMutTrait: AsMut<Boolean> + BooleanTrait {
 
 impl BooleanTrait for Boolean { }
 impl BooleanMutTrait for Boolean { }
+
+#[test]
+fn test_boolean_propigation() {
+    let tests: Vec<(Boolean,Boolean,Op,Result<Boolean,()>)> = vec![
+        (Boolean::new_constant(true),Boolean::new_constant(true),Op::AND, Ok(Boolean::new_constant(true))),
+        (Boolean::new_constant(false),Boolean::new_constant(true),Op::AND, Ok(Boolean::new_constant(false))),
+        (Boolean::new_constant(true),Boolean::new_constant(false),Op::AND, Ok(Boolean::new_constant(false))),
+    ];
+
+    for test_case in tests {
+        let l = test_case.0;
+        let r = test_case.1;
+        let op = test_case.2;
+        let result = test_case.3;
+
+        let output = trinary_operations(&l,op,&r);
+        if output != result {
+            panic!("found:{:?} expected:{:?} for ( {:?} {:?} {:?} )", output, result, l, op, r);
+        }
+    }
+}

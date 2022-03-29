@@ -1,6 +1,11 @@
+use std::ops::RangeInclusive;
+use crate::internals::{
+    parser::ast::op::Op,
+    canonization::kinds::primative::boolean::{Boolean,BooleanTrait},
+};
+
 use serde::{Deserialize, Serialize};
 
-use std::ops::RangeInclusive;
 
 /// Integer is the basic representation of an integer value.
 ///
@@ -11,6 +16,130 @@ pub struct Integer {
     maximum: Option<i64>,
     minimum: Option<i64>,
     constant: Option<i64>,
+}
+
+pub fn trinary_iib_op<L,R>(l: &L, op: Op, r: &R) -> Result<Boolean,()>
+where
+    L: IntegerTrait,
+    R: IntegerTrait,
+{
+    let operation = bool_op_gen(op)?;
+
+    // general constant case
+    // (works for everything)
+    let con = l.get_constant().into_iter().zip(r.get_constant()).map(|(l,r)| operation(l,r)).next();
+    if let Option::Some(val) = con {
+        return Ok(Boolean::new_constant(val));
+    }
+
+    let l_range = l.get_range();
+    let r_range = r.get_range();
+    match op {
+        Op::EQ => {
+            if l.is_constant() && !r_range.contains(&l.get_constant().unwrap()) ||
+                r.is_constant() && !l_range.contains(&r.get_constant().unwrap()) {
+                Ok(Boolean::new_constant(false))
+            } else {
+                Ok(Boolean::all_vals())
+            }
+        },
+        Op::NE => {
+            if l.is_constant() && !r_range.contains(&l.get_constant().unwrap()) ||
+                r.is_constant() && !l_range.contains(&r.get_constant().unwrap()) {
+                Ok(Boolean::new_constant(true))
+            } else {
+                Ok(Boolean::all_vals())
+            }
+        }
+        Op::GT | Op::GE | Op::LT | Op::LE => {
+            let a = (operation)(*l_range.start(),*r_range.start());
+            let b = (operation)(*l_range.start(),*r_range.end());
+            let c = (operation)(*l_range.end(), *r_range.start());
+            let d = (operation)(*l_range.end(), *r_range.end());
+            if a == b && b == c && d == c {
+                Ok(Boolean::new_constant(a))
+            } else {
+                Ok(Boolean::all_vals())
+            }
+        }
+        _ => Err(())
+    }
+}
+
+pub fn trinary_iii_op<L,R>(l: &L, op: Op, r: &R) -> Result<Integer,()>
+where
+    L: IntegerTrait,
+    R: IntegerTrait,
+{
+
+    let op = int_op_gen(op)?;
+
+    let con = l.get_constant().into_iter().zip(r.get_constant()).map(|(l,r)| op(l,r)).next();
+    if let Option::Some(x) = con.clone() {
+        return Ok(Integer::new_constant(x));
+    }
+
+    let max = l.get_maximum().into_iter().zip(r.get_maximum()).map(|(l,r)| op(l,r)).next();
+    let min = l.get_minimum().into_iter().zip(r.get_minimum()).map(|(l,r)| op(l,r)).next();
+    // check if order changed
+    let (max,min) = if max > min { (max,min) } else { (min,max) };
+    Ok(Integer::new(max, min, None))
+}
+
+fn int_op_gen(op: Op) -> Result<&'static (dyn Fn(i64,i64)->i64+'static),()> {
+    match op {
+        Op::ADD => {
+            fn add(l: i64, r: i64) -> i64 { l + r }
+            Ok(&add)
+        }
+        Op::SUB => {
+            fn sub(l: i64, r: i64) -> i64 { l - r }
+            Ok(&sub)
+        }
+        Op::MUL => {
+            fn mul(l: i64, r: i64) -> i64 { l * r }
+            Ok(&mul)
+        }
+        Op::DIV => {
+            fn div(l: i64, r: i64) -> i64 { l / r }
+            Ok(&div)
+        }
+        _ => {
+            Err(())
+        }
+    }
+}
+
+fn bool_op_gen(op: Op) -> Result<&'static (dyn Fn(i64,i64)->bool+'static),()> {
+    match op {
+        Op::EQ => {
+            fn eq(l: i64, r: i64) -> bool { l == r }
+            Ok(&eq)
+        }
+        Op::NE => {
+            fn ne(l: i64, r: i64) -> bool { l != r }
+            Ok(&ne)
+        }
+        Op::GT => {
+            fn gt(l: i64, r: i64) -> bool { l > r }
+            Ok(&gt)
+        }
+        Op::GE => {
+            fn ge(l: i64, r: i64) -> bool { l >= r }
+            Ok(&ge)
+        }
+        Op::LT => {
+            fn lt(l: i64, r: i64) -> bool { l < r }
+            Ok(&lt)
+        }
+        Op::LE => {
+            fn le(l: i64, r: i64) -> bool { l <= r }
+            Ok(&le)
+        }
+        _ => {
+            Err(())
+        }
+    }
 }
 
 impl AsRef<Integer> for Integer {
@@ -233,6 +362,7 @@ pub trait IntegerMutTrait: AsMut<Integer> + IntegerTrait {
         }
     }
 }
+
 
 #[test]
 fn trivial_integer_properities() {
