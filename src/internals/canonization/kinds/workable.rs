@@ -35,6 +35,12 @@ impl AsMut<TypeData> for TypeData {
     }
 }
 
+impl From<&TypeData> for TypeData {
+    fn from(arg: &TypeData) -> Self {
+        arg.clone()
+    }
+}
+
 impl From<Collection> for TypeData {
     fn from(arg: Collection) -> Self {
         Self::Coll(arg)
@@ -189,6 +195,11 @@ pub trait TypeDataTrait: AsRef<TypeData> + AsMut<TypeData> {
      * Getter Methods
      *
      */
+
+    /// return a copy of the type data
+    fn get_copy(&self) -> TypeData {
+        self.as_ref().clone()
+    }
 
     /// yields the return type of functions/compositional functions
     /// otherwise it returns the interior type.

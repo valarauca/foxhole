@@ -51,6 +51,7 @@ where
 }
 
 impl Prim {
+
     pub fn new_int_constant(constant: i64) -> Self {
         Self::from(constant)
     }

@@ -184,6 +184,11 @@ where
 /// It exists to simply the generation error messages as well as
 /// getting source location more imply.
 pub trait Spanner: AsRef<Span> {
+    /// returns a copy of the span
+    fn get_clone(&self) -> Span {
+        self.as_ref().clone()
+    }
+
     /// returns the byte index of the first byte of this span within the source file.
     fn get_start_byte_index(&self) -> usize {
         self.as_ref().start_byte as usize
