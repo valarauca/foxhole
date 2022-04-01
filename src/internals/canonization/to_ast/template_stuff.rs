@@ -3,28 +3,21 @@ use std::collections::HashMap;
 
 use serde::{Serialize};
 
-use crate::internals::parser::{
-    ast::{
-        ident::Ident,
-        template::{Template,TemplateBehavior,TemplateFallback},
+use crate::internals::{
+    parser::{
+        ast::{
+            ident::Ident,
+            template::{Template,TemplateBehavior,TemplateFallback},
+        },
+        span::{Span,Spanner},
     },
-    span::{Span,Spanner},
+    canonization::to_ast::validation_errors::ValidationErrors,
 };
 
 
 /// Handles storing & updating template information
 pub struct TemplateDefinations {
     data: HashMap<String,usize>,
-}
-
-/// Abstract Error format for when a template error occurs
-pub trait TemplateError: Sized {
-
-    fn no_value(template: &Template) -> Self;
-
-    fn unparsable_fallback(template: &Template, value: &Span) -> Self;
-
-    fn recursive(template: &Template, interior: Self) -> Self;
 }
 
 
@@ -57,7 +50,7 @@ impl TemplateDefinations {
     /// attempts to find value for a template
     pub fn get_value<E>(&mut self, template: &Template) -> Result<usize,E>
     where
-        E: TemplateError,
+        E: ValidationErrors
     {
         if let Some(x) = self.lookup_ident(&template.ident) {
             return Ok(x);
@@ -65,12 +58,12 @@ impl TemplateDefinations {
 
         match &template.behavior {
             &Option::None => {
-                Err(E::no_value(template))
+                Err(E::no_value_for_template(template))
             },
             &Option::Some(TemplateBehavior::Fallback(TemplateFallback::Num(ref val))) => {
                 match usize::from_str_radix(val.get_span(), 10) {
                     Ok(x) => Ok(x),
-                    Err(_) => Err(E::unparsable_fallback(template, val)),
+                    Err(_) => Err(E::unparsable_template_fallback(template, val.as_ref())),
                 }
             },
             &Option::Some(TemplateBehavior::Assign(TemplateFallback::Num(ref val))) => {
@@ -79,24 +72,22 @@ impl TemplateDefinations {
                         self.insert_ident(&template.ident, x);
                         Ok(x)
                     }
-                    Err(_) => return Err(E::unparsable_fallback(template,val))
+                    Err(_) => return Err(E::unparsable_template_fallback(template,val.as_ref()))
                 }
             }
             &Option::Some(TemplateBehavior::Fallback(TemplateFallback::Template(ref t))) => {
-                // potentially unbounded recursion
                 match self.get_value::<E>(t) {
                     Ok(x) => Ok(x),
-                    Err(e) => Err(E::recursive(template,e))
+                    Err(e) => Err(E::recursive_template_error(template,e))
                 }
             }
             &Option::Some(TemplateBehavior::Assign(TemplateFallback::Template(ref t))) => {
-                // potentially unbounded recursion
                 match self.get_value::<E>(t) {
                     Ok(x) => {
                         self.insert_ident(&template.ident, x);
                         Ok(x)
                     }
-                    Err(e) => Err(E::recursive(template,e))
+                    Err(e) => Err(E::recursive_template_error(template,e))
                 }
             }
         }

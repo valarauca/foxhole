@@ -4,11 +4,17 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use crate::internals::{
-    canonization::to_ast::identifier::Hash,
-    parser::ast::{
-        assign::Assign,
-        func::FunctionDec,
-        comparg::CompositionalFunction,
+    canonization::to_ast::{
+        identifier::Hash,
+        validation_errors::ValidationErrors,
+    },
+    parser::{
+        span::{Span,Spanner},
+        ast::{
+            assign::Assign,
+            func::FunctionDec,
+            comparg::CompositionalFunction,
+        },
     }
 };
 
@@ -28,6 +34,17 @@ impl From<Assign> for VarType {
     }
 }
 
+impl AsRef<Span> for VarType {
+    fn as_ref(&self) -> &Span {
+        match self {
+            &VarType::Var(ref x) => x.as_ref(),
+            &VarType::Const(ref x) => x.as_ref(),
+        }
+    }
+}
+
+impl Spanner for VarType { }
+
 /// A simple wrapper for the "two" kinds of functions
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum FuncType {
@@ -42,13 +59,16 @@ impl From<CompositionalFunction> for FuncType {
     fn from(x: CompositionalFunction) -> Self { Self::Comp(x) }
 }
 
-/// Handles providing an error when namespace conflicts occur
-pub trait NamespaceError: Sized {
-
-    fn var_conflict(new: &VarType, old: &VarType) -> Self;
-
-    fn func_conflict(new: &FuncType, old: &FuncType) -> Self;
+impl AsRef<Span> for FuncType {
+    fn as_ref(&self) -> &Span {
+        match self {
+            &FuncType::Normal(ref x) => x.as_ref(),
+            &FuncType::Comp(ref x) => x.as_ref(),
+        }
+    }
 }
+
+impl Spanner for FuncType { }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Hash, Ord, Serialize, Deserialize)]
 pub struct Namespace {
@@ -58,10 +78,12 @@ pub struct Namespace {
 
 impl Namespace {
 
+    // TODO: Add var
+
     fn add_func<'a, T,E>(&mut self, arg: &'a T) -> Result<(),E>
     where
         T: 'static + Clone,
-        E: NamespaceError,
+        E: ValidationErrors,
         FuncType: From<T>,
         Hash: From<&'a T>,
     {
@@ -76,6 +98,5 @@ impl Namespace {
         self.funcs.insert(hash, data); 
         Ok(())
     }
-
 }
 

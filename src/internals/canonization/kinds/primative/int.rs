@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 use crate::internals::{
-    parser::ast::op::Op,
+    parser::{ ast::op::Op, span::Spanner},
     canonization::kinds::primative::boolean::{Boolean,BooleanTrait},
 };
 
@@ -160,6 +160,18 @@ impl IntegerTrait for Integer {}
 impl IntegerMutTrait for Integer {}
 
 impl Integer {
+
+    /// builds a constant from a span, wrapper function
+    /// should handle the error
+    pub fn constant_from_span<S>(arg: &S) -> Option<Self>
+    where
+        S: Spanner,
+    {
+        i64::from_str_radix(arg.get_span(), 10)
+            .ok()
+            .map(Self::new_constant)
+    }
+
     /// Create a new instant of `Integer` from a constant value, for a constant
     /// value.
     pub fn new_constant(value: i64) -> Self {
